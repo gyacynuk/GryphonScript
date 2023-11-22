@@ -6,7 +6,7 @@ import gryphon.GryphonScript;
 import java.io.IOException;
 
 public class Main {
-    private static final String USAGE_MESSAGE = "Usage: holy [path]";
+    private static final String USAGE_MESSAGE = "Usage: gryphonscript [path]";
 
     public static void main(String[] args) throws IOException {
         Injector injector = Guice.createInjector(new GryphonScriptModule());
