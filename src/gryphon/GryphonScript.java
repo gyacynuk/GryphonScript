@@ -20,7 +20,7 @@ import java.util.List;
 
 @RequiredArgsConstructor(onConstructor_ = { @Inject })
 public class GryphonScript {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final String REPL_PREFIX = "> ";
 
     private final ErrorReporter errorReporter;
