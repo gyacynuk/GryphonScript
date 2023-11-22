@@ -1,0 +1,43 @@
+package model;
+
+import java.util.List;
+
+public sealed interface Expression {
+    Expression.ArgumentHole HOLE = new ArgumentHole();
+    Expression.Literal NIL = new Literal(null);
+
+    /**
+     * A literal value, which can take the form of:
+     *   → NUMBER | STRING | "true" | "false" | "nil"
+     *
+     * @param value the literal value represented in Java. For instance, a Java String, or a Java Boolean.
+     */
+    record Literal(Object value) implements Expression {}
+    record ArgumentHole() implements Expression {}
+    record Variable(Token name) implements Expression {}
+    record Declaration(Token variable, Expression initializer) implements Expression {}
+    record Assignment(Token variable, Expression value) implements Expression {}
+    record Unary(Token operator, Expression right) implements Expression {}
+    sealed interface Binary extends Expression {
+        Expression left();
+        Expression right();
+        Token operator();
+        record Operation(Expression left, Expression right, Token operator) implements Binary { }
+        record Logical(Expression left, Expression right, Token operator) implements Binary { }
+        record Infix(Expression left, Expression right, Token operator) implements Binary { }
+    }
+
+    /**
+     * A group of expressions with the highest precedence for evaluation. For instance, (1 + 2) is a grouping in the
+     * expression: (1 + 2) * 3
+     *
+     * @param expression
+     */
+    record Group(Expression expression) implements Expression {}
+    record Block(List<Expression> expressions) implements Expression {}
+    record If(Expression condition, Expression thenBranch, Expression elseBranch) implements Expression {}
+    record While(Expression condition, Expression body) implements Expression {}
+    record Lambda(List<Token> parameters, Expression body) implements Expression {}
+    record Invocation(Expression callee, Token closingBracket, List<Expression> arguments) implements Expression {}
+    record Index(Expression callee, Token closingBracket, Expression index) implements Expression {}
+}
