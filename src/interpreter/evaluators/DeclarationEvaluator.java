@@ -1,7 +1,7 @@
 package interpreter.evaluators;
 
 import interpreter.Interpreter;
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 import model.Expression;
 
 public class DeclarationEvaluator implements ExpressionEvaluator<Expression.Declaration> {

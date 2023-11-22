@@ -2,9 +2,6 @@ package tokenizer;
 
 import com.google.inject.Inject;
 import error.ErrorReporter;
-import interpreter.data.GDouble;
-import interpreter.data.GInteger;
-import interpreter.data.GObject;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Token;
@@ -14,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static model.TokenType.*;

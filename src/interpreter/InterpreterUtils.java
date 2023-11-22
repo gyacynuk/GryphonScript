@@ -1,8 +1,9 @@
 package interpreter;
 
-import interpreter.data.GBoolean;
-import interpreter.data.GNil;
-import interpreter.data.GObject;
+import interpreter.datatypes.GBoolean;
+import interpreter.datatypes.GNil;
+import interpreter.datatypes.GNumeric;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import model.Token;
 
@@ -25,20 +26,20 @@ public class InterpreterUtils {
         };
     }
 
-    public static Function<Function<GObject.Numeric, GObject>, GObject> numericEnforcementFunctionDecorator(
+    public static Function<Function<GNumeric, GObject>, GObject> numericEnforcementFunctionDecorator(
             Token operator, Object operand) {
-        return (Function<GObject.Numeric, GObject> numericOperation) -> {
-            if (operand instanceof GObject.Numeric numeric) {
+        return (Function<GNumeric, GObject> numericOperation) -> {
+            if (operand instanceof GNumeric numeric) {
                 return numericOperation.apply(numeric);
             }
             throw new RuntimeError(operator, "Operand must be a number");
         };
     }
 
-    public static Function<BiFunction<GObject.Numeric, GObject.Numeric, GObject>, GObject> numericEnforcementBiFunctionDecorator(
+    public static Function<BiFunction<GNumeric, GNumeric, GObject>, GObject> numericEnforcementBiFunctionDecorator(
             Token operator, GObject operandLeft, GObject operandRight) {
-        return (BiFunction<GObject.Numeric, GObject.Numeric, GObject> numericOperation) -> {
-            if (operandLeft instanceof GObject.Numeric numericLeft && operandRight instanceof GObject.Numeric numericRight) {
+        return (BiFunction<GNumeric, GNumeric, GObject> numericOperation) -> {
+            if (operandLeft instanceof GNumeric numericLeft && operandRight instanceof GNumeric numericRight) {
                 return numericOperation.apply(numericLeft, numericRight);
             }
             throw new RuntimeError(operator, "Operands must be numbers");

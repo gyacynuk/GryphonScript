@@ -33,9 +33,19 @@ public class SemanticVariableResolver implements Resolver {
     private void resolveExpression(Expression expression) {
         switch (expression) {
             case Expression.Literal ignored -> { /* do nothing */ }
+            case Expression.ListLiteral listLiteral -> listLiteral.values().forEach(this::resolveExpression);
             case Expression.Assignment assignment -> {
                 resolveExpression(assignment.value());
                 resolveCallStackScope(assignment, assignment.variable());
+            }
+            case Expression.IndexAssignment indexAssignment -> {
+                resolveExpression(indexAssignment.assignee());
+                resolveExpression(indexAssignment.index());
+                resolveExpression(indexAssignment.value());
+            }
+            case Expression.Index index -> {
+                resolveExpression(index.callee());
+                resolveExpression(index.index());
             }
             case Expression.Declaration declaration -> {
                 declare(declaration.variable());
@@ -84,10 +94,6 @@ public class SemanticVariableResolver implements Resolver {
                 });
                 resolveExpression(lambda.body());
                 endScope();
-            }
-            case Expression.Index index -> {
-                resolveExpression(index.callee());
-                resolveExpression(index.index());
             }
         }
     }

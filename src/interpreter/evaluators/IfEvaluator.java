@@ -2,7 +2,7 @@ package interpreter.evaluators;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 import model.Expression;
 
 public class IfEvaluator implements ExpressionEvaluator<Expression.If> {

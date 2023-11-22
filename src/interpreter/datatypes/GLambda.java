@@ -1,4 +1,4 @@
-package interpreter.data;
+package interpreter.datatypes;
 
 import interpreter.lambda.Invokable;
 

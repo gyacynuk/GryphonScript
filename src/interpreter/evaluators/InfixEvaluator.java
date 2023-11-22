@@ -1,10 +1,9 @@
 package interpreter.evaluators;
 
 import interpreter.Interpreter;
-import interpreter.data.GLambda;
-import interpreter.data.GObject;
+import interpreter.datatypes.GLambda;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
-import interpreter.lambda.Invokable;
 import model.Expression;
 
 import java.util.Collections;

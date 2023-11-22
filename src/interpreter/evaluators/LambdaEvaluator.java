@@ -1,8 +1,8 @@
 package interpreter.evaluators;
 
 import interpreter.Interpreter;
-import interpreter.data.GLambda;
-import interpreter.data.GObject;
+import interpreter.datatypes.GLambda;
+import interpreter.datatypes.GObject;
 import interpreter.lambda.LambdaFunction;
 import model.Expression;
 

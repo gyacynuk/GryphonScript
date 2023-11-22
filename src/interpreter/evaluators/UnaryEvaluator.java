@@ -2,9 +2,9 @@ package interpreter.evaluators;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
-import interpreter.data.GBoolean;
-import interpreter.data.GInteger;
-import interpreter.data.GObject;
+import interpreter.datatypes.GBoolean;
+import interpreter.datatypes.GInteger;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import model.Expression;
 

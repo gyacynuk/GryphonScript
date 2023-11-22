@@ -1,6 +1,6 @@
-package interpreter.data;
+package interpreter.datatypes;
 
-public record GDouble(Double value) implements GObject.Numeric {
+public record GDouble(Double value) implements GNumeric {
 
     @Override
     public Double toDouble() {
@@ -8,22 +8,22 @@ public record GDouble(Double value) implements GObject.Numeric {
     }
 
     @Override
-    public Numeric add(Numeric other) {
+    public GNumeric add(GNumeric other) {
         return new GDouble(value() + other.toDouble());
     }
 
     @Override
-    public Numeric subtract(Numeric other) {
+    public GNumeric subtract(GNumeric other) {
         return new GDouble(value() - other.toDouble());
     }
 
     @Override
-    public Numeric multiply(Numeric other) {
+    public GNumeric multiply(GNumeric other) {
         return new GDouble(value() * other.toDouble());
     }
 
     @Override
-    public Numeric divide(Numeric other) {
+    public GNumeric divide(GNumeric other) {
         return new GDouble(value() / other.toDouble());
     }
 }

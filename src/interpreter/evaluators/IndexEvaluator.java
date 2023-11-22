@@ -1,12 +1,11 @@
 package interpreter.evaluators;
 
+import error.Result;
 import interpreter.Interpreter;
-import interpreter.data.GInteger;
-import interpreter.data.GObject;
+import interpreter.datatypes.GIndexable;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import model.Expression;
-
-import java.util.List;
 
 public class IndexEvaluator implements ExpressionEvaluator<Expression.Index> {
     @Override
@@ -14,21 +13,14 @@ public class IndexEvaluator implements ExpressionEvaluator<Expression.Index> {
         GObject callee = interpreter.evaluateExpression(expression.callee());
         GObject index = interpreter.evaluateExpression(expression.index());
 
-        if (index instanceof GInteger gInt) {
-            int i = gInt.value();
-            if (callee instanceof GObject.Heap.GList gList) {
-                List<GObject> list = gList.value();
-                if (i < 0) {
-                    throw new RuntimeError(expression.closingBracket(), String.format("Index %d must be non-negative", i));
-                } else if (i >= list.size()) {
-                    throw new RuntimeError(expression.closingBracket(), String.format("Index %d out of bounds for list of length %d", i, list.size()));
-                }
-                return list.get(i);
-            } else {
-                return null;
-            }
-        } else {
-            throw new RuntimeError(expression.closingBracket(), "Index must be an integer");
+        if (!(callee instanceof GIndexable indexable)) {
+            throw new RuntimeError(expression.closingBracket(), "Cannot index a primitive data type or lambda, only lists and structs can be indexed");
         }
+
+        Result<GObject, String> result = indexable.getAtIndex(index);
+        return switch (result) {
+            case Result.Success<GObject, String> success -> success.value();
+            case Result.Error<GObject, String> error -> throw new RuntimeError(expression.closingBracket(), error.value());
+        };
     }
 }

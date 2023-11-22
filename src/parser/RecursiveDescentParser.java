@@ -1,10 +1,10 @@
 package parser;
 
 import error.ErrorReporter;
-import interpreter.data.GBoolean;
-import interpreter.data.GDouble;
-import interpreter.data.GInteger;
-import interpreter.data.GString;
+import interpreter.datatypes.GBoolean;
+import interpreter.datatypes.GDouble;
+import interpreter.datatypes.GInteger;
+import interpreter.datatypes.GString;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import model.BinaryExpressionInitializer;
@@ -147,6 +147,8 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
             // lValueOrExpr is actually and r-value at this point in time, but below we convert it to a true l-value
             if (lValueOrExpr instanceof Expression.Variable variable) {
                 return new Expression.Assignment(variable.name(), rValue);
+            } else if (lValueOrExpr instanceof Expression.Index index) {
+                return new Expression.IndexAssignment(index.callee(), index.index(), rValue, index.closingBracket());
             }
 
             throw error(equals, "Invalid assignment target");
@@ -244,9 +246,6 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         List<Expression> arguments = new ArrayList<>();
         if (!check(RIGHT_BRACKET)) {
             do {
-                if (arguments.size() >= 255)
-                    // Do not throw and panic, just report the error
-                    error(peek(), "Function cannot have more than 255 arguments");
                 arguments.add(parseExpressionStatement());
             } while (matchAndConsumeAny(COMMA));
         }
@@ -259,6 +258,18 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         Expression index = parseExpressionStatement();
         Token paren = consume(RIGHT_SQUARE, "Expected ']' after index");
         return new Expression.Index(callee, paren, index);
+    }
+
+    private Expression.ListLiteral finishListLiteral() {
+        List<Expression> elements = new ArrayList<>();
+        if (!check(RIGHT_SQUARE)) {
+            do {
+                elements.add(parseExpressionStatement());
+            } while (matchAndConsumeAny(COMMA));
+        }
+
+        consume(RIGHT_SQUARE, "Expected ']' to terminate list literal");
+        return new Expression.ListLiteral(elements);
     }
 
     private Expression parsePrimaryExpression() {
@@ -274,13 +285,14 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         if (matchAndConsumeAny(UNDERSCORE)) return Expression.HOLE;
         if (matchAndConsumeAny(IDENTIFIER)) return new Expression.Variable(previous());
 
-        // TODO: implement array literals in the same style below:
         // Groups
         if (matchAndConsumeAny(LEFT_BRACKET)) {
-            Expression expr = parseExpressionStatement();
+            Expression expression = parseExpressionStatement();
             consume(RIGHT_BRACKET, "Expected ')' after expression.");
-            return new Expression.Group(expr);
+            return new Expression.Group(expression);
         }
+        // Lists
+        if (matchAndConsumeAny(LEFT_SQUARE)) return finishListLiteral();
 
         // Control keywords
         if (matchAndConsumeAny(IF)) return parseIfExpression();

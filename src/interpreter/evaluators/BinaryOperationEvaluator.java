@@ -2,9 +2,10 @@ package interpreter.evaluators;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
-import interpreter.data.GBoolean;
-import interpreter.data.GObject;
-import interpreter.data.GString;
+import interpreter.datatypes.GBoolean;
+import interpreter.datatypes.GNumeric;
+import interpreter.datatypes.GObject;
+import interpreter.datatypes.GString;
 import interpreter.errors.RuntimeError;
 import model.Expression;
 
@@ -19,14 +20,14 @@ public class BinaryOperationEvaluator implements ExpressionEvaluator<Expression.
         var numericEnforcementDecorator = InterpreterUtils
                 .numericEnforcementBiFunctionDecorator(expression.operator(), left, right);
         return switch (expression.operator().type()) {
-            case GREATER -> numericEnforcementDecorator.apply(GObject.Numeric::greaterThan);
-            case GREATER_EQUAL -> numericEnforcementDecorator.apply(GObject.Numeric::greaterThanOrEqualTo);
-            case LESS -> numericEnforcementDecorator.apply(GObject.Numeric::lessThan);
-            case LESS_EQUAL -> numericEnforcementDecorator.apply(GObject.Numeric::lessThanOrEqualTo);
-            case PLUS -> numericEnforcementDecorator.apply(GObject.Numeric::add);
-            case MINUS -> numericEnforcementDecorator.apply(GObject.Numeric::subtract);
-            case SLASH -> numericEnforcementDecorator.apply(GObject.Numeric::divide);
-            case STAR -> numericEnforcementDecorator.apply(GObject.Numeric::multiply);
+            case GREATER -> numericEnforcementDecorator.apply(GNumeric::greaterThan);
+            case GREATER_EQUAL -> numericEnforcementDecorator.apply(GNumeric::greaterThanOrEqualTo);
+            case LESS -> numericEnforcementDecorator.apply(GNumeric::lessThan);
+            case LESS_EQUAL -> numericEnforcementDecorator.apply(GNumeric::lessThanOrEqualTo);
+            case PLUS -> numericEnforcementDecorator.apply(GNumeric::add);
+            case MINUS -> numericEnforcementDecorator.apply(GNumeric::subtract);
+            case SLASH -> numericEnforcementDecorator.apply(GNumeric::divide);
+            case STAR -> numericEnforcementDecorator.apply(GNumeric::multiply);
             case CONCAT -> {
                 if (left instanceof GString leftString) {
                     yield new GString(leftString.value() + right.stringify());

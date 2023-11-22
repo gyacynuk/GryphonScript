@@ -1,33 +1,33 @@
-package interpreter.data;
+package interpreter.datatypes;
 
-public record GInteger(Integer value) implements GObject.Numeric {
+public record GInteger(Integer value) implements GNumeric {
     @Override
     public Double toDouble() {
         return (double) value();
     }
 
     @Override
-    public GBoolean greaterThan(Numeric other) {
+    public GBoolean greaterThan(GNumeric other) {
         return new GBoolean(toDouble() > other.toDouble());
     }
 
     @Override
-    public GBoolean greaterThanOrEqualTo(Numeric other) {
+    public GBoolean greaterThanOrEqualTo(GNumeric other) {
         return new GBoolean(toDouble() > other.toDouble());
     }
 
     @Override
-    public GBoolean lessThan(Numeric other) {
+    public GBoolean lessThan(GNumeric other) {
         return null;
     }
 
     @Override
-    public GBoolean lessThanOrEqualTo(Numeric other) {
+    public GBoolean lessThanOrEqualTo(GNumeric other) {
         return null;
     }
 
     @Override
-    public Numeric add(Numeric other) {
+    public GNumeric add(GNumeric other) {
         return switch (other) {
             case GInteger gInteger -> new GInteger(value() + gInteger.value());
             case GDouble gDouble -> new GDouble(toDouble() + gDouble.value());
@@ -35,7 +35,7 @@ public record GInteger(Integer value) implements GObject.Numeric {
     }
 
     @Override
-    public Numeric subtract(Numeric other) {
+    public GNumeric subtract(GNumeric other) {
         return switch (other) {
             case GInteger gInteger -> new GInteger(value() - gInteger.value());
             case GDouble gDouble -> new GDouble(toDouble() - gDouble.value());
@@ -43,7 +43,7 @@ public record GInteger(Integer value) implements GObject.Numeric {
     }
 
     @Override
-    public Numeric multiply(Numeric other) {
+    public GNumeric multiply(GNumeric other) {
         return switch (other) {
             case GInteger gInteger -> new GInteger(value() * gInteger.value());
             case GDouble gDouble -> new GDouble(toDouble() * gDouble.value());
@@ -51,7 +51,7 @@ public record GInteger(Integer value) implements GObject.Numeric {
     }
 
     @Override
-    public Numeric divide(Numeric other) {
+    public GNumeric divide(GNumeric other) {
         return switch (other) {
             case GInteger gInteger -> new GInteger(value() / gInteger.value());
             case GDouble gDouble -> new GDouble(toDouble() / gDouble.value());

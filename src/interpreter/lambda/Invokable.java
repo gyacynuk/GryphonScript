@@ -1,7 +1,7 @@
 package interpreter.lambda;
 
 import interpreter.Interpreter;
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 
 import java.util.List;
 

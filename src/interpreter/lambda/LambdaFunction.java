@@ -1,9 +1,9 @@
 package interpreter.lambda;
 
 import interpreter.Interpreter;
-import interpreter.data.GHole;
-import interpreter.data.GLambda;
-import interpreter.data.GObject;
+import interpreter.datatypes.GHole;
+import interpreter.datatypes.GLambda;
+import interpreter.datatypes.GObject;
 import interpreter.runtime.Environment;
 import lombok.RequiredArgsConstructor;
 import model.Expression;

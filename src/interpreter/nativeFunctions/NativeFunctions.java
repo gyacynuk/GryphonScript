@@ -1,10 +1,9 @@
 package interpreter.nativeFunctions;
 
 import interpreter.Interpreter;
-import interpreter.InterpreterUtils;
-import interpreter.data.GDouble;
-import interpreter.data.GLambda;
-import interpreter.data.GObject;
+import interpreter.datatypes.GDouble;
+import interpreter.datatypes.GLambda;
+import interpreter.datatypes.GObject;
 import interpreter.lambda.Invokable;
 import lombok.NoArgsConstructor;
 

@@ -1,7 +1,7 @@
 package model;
 
-import interpreter.data.GHole;
-import interpreter.data.GObject;
+import interpreter.datatypes.GHole;
+import interpreter.datatypes.GObject;
 
 import java.util.List;
 
@@ -16,9 +16,11 @@ public sealed interface Expression {
      * @param value the literal value represented in Java. For instance, a Java String, or a Java Boolean.
      */
     record Literal(GObject value) implements Expression {}
+    record ListLiteral(List<Expression> values) implements Expression {}
     record Variable(Token name) implements Expression {}
     record Declaration(Token variable, Expression initializer) implements Expression {}
     record Assignment(Token variable, Expression value) implements Expression {}
+    record IndexAssignment(Expression assignee, Expression index, Expression value, Token closingBracket) implements Expression {}
     record Unary(Token operator, Expression right) implements Expression {}
     sealed interface Binary extends Expression {
         Expression left();

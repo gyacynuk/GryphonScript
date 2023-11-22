@@ -1,7 +1,7 @@
 package interpreter;
 
 import error.ErrorReporter;
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import interpreter.evaluators.*;
 import interpreter.lambda.Invokable;
@@ -23,14 +23,16 @@ import java.util.function.Supplier;
 public class TreeWalkInterpreter implements Interpreter {
     private final ErrorReporter errorReporter;
     private final NativeFunctions nativeFunctions;
-    private final Environment globalEnvironment = Environment.createGlobalEnvironment();
     private final Map<Expression, Integer> stackDepthMap = new HashMap<>();
+    private final Environment globalEnvironment = Environment.createGlobalEnvironment();
     private Environment currentEnvironment = globalEnvironment;
 
     private final LiteralEvaluator literalEvaluator;
+    private final ListLiteralEvaluator listLiteralEvaluator;
     private final VariableEvaluator variableEvaluator;
     private final DeclarationEvaluator declarationEvaluator;
     private final AssignmentEvaluator assignmentEvaluator;
+    private final IndexAssignmentEvaluator indexAssignmentEvaluator;
     private final UnaryEvaluator unaryExecutor;
     private final GroupEvaluator groupEvaluator;
     private final BinaryOperationEvaluator binaryOperationEvaluator;
@@ -66,12 +68,16 @@ public class TreeWalkInterpreter implements Interpreter {
         return switch (expression) {
             case Expression.Literal literalExpression -> literalEvaluator
                     .evaluateExpression(this, literalExpression);
+            case Expression.ListLiteral listLiteralExpression -> listLiteralEvaluator
+                    .evaluateExpression(this, listLiteralExpression);
             case Expression.Variable variableExpression -> variableEvaluator
                     .evaluateExpression(this, variableExpression);
             case Expression.Declaration declarationExpression -> declarationEvaluator
                     .evaluateExpression(this, declarationExpression);
             case Expression.Assignment assignmentExpression -> assignmentEvaluator
                     .evaluateExpression(this, assignmentExpression);
+            case Expression.IndexAssignment indexAssignmentExpression -> indexAssignmentEvaluator
+                    .evaluateExpression(this, indexAssignmentExpression);
             case Expression.Group groupExpression -> groupEvaluator
                     .evaluateExpression(this, groupExpression);
             case Expression.Unary unaryExpression -> unaryExecutor

@@ -1,6 +1,6 @@
 package interpreter.runtime;
 
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import lombok.RequiredArgsConstructor;
 import model.Token;

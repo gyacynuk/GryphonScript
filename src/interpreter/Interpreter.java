@@ -1,6 +1,6 @@
 package interpreter;
 
-import interpreter.data.GObject;
+import interpreter.datatypes.GObject;
 import interpreter.lambda.Invokable;
 import interpreter.runtime.Environment;
 import model.Expression;
