@@ -1,9 +1,10 @@
 package gryphon;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import desugarer.Desugarer;
 import error.ErrorReporter;
 import interpreter.Interpreter;
-import lombok.RequiredArgsConstructor;
 import model.Expression;
 import model.Token;
 import parser.Parser;
@@ -18,16 +19,26 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-@RequiredArgsConstructor(onConstructor_ = { @Inject })
 public class GryphonScript {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final String REPL_PREFIX = "> ";
 
     private final ErrorReporter errorReporter;
     private final Tokenizer tokenizer;
     private final Parser parser;
+    private final Desugarer desugarer;
     private final Resolver resolver;
     private final Interpreter interpreter;
+
+    @Inject
+    public GryphonScript(ErrorReporter errorReporter, Tokenizer tokenizer, Parser parser, @Named("ListLambdaHoles") Desugarer desugarer, Resolver resolver, Interpreter interpreter) {
+        this.errorReporter = errorReporter;
+        this.tokenizer = tokenizer;
+        this.parser = parser;
+        this.desugarer = desugarer;
+        this.resolver = resolver;
+        this.interpreter = interpreter;
+    }
 
     public void executeFile(String filePath) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(filePath));
@@ -60,14 +71,18 @@ public class GryphonScript {
 
         // Stop if there was a tokenization error.
         if (errorReporter.isInError()) return;
-
         if (DEBUG) System.out.println(tokens);
 
         List<Expression> expressions = parser.parse(tokens);
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
+        if (DEBUG) System.out.println(expressions);
 
+        expressions = desugarer.desugar(expressions);
+
+        // Stop if there was a syntax error.
+        if (errorReporter.isInError()) return;
         if (DEBUG) System.out.println(expressions);
 
         resolver.resolveProgram(interpreter, expressions);

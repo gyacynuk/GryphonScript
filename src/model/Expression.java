@@ -16,7 +16,7 @@ public sealed interface Expression {
      * @param value the literal value represented in Java. For instance, a Java String, or a Java Boolean.
      */
     record Literal(GObject value) implements Expression {}
-    record ListLiteral(List<Expression> values) implements Expression {}
+    record ListLiteral(List<Expression> values, Token closingBracket) implements Expression {}
     record Variable(Token name) implements Expression {}
     record Declaration(Token variable, Expression initializer) implements Expression {}
     record Assignment(Token variable, Expression value) implements Expression {}

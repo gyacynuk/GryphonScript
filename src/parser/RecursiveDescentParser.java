@@ -268,8 +268,8 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
             } while (matchAndConsumeAny(COMMA));
         }
 
-        consume(RIGHT_SQUARE, "Expected ']' to terminate list literal");
-        return new Expression.ListLiteral(elements);
+        Token paren = consume(RIGHT_SQUARE, "Expected ']' to terminate list literal");
+        return new Expression.ListLiteral(elements, paren);
     }
 
     private Expression parsePrimaryExpression() {

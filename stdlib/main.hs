@@ -4,18 +4,15 @@ let modelNumber = add(600, 70) |> add5
 
 'The best motorcycle is the Daytona ' @ modelNumber @ 'r' |> print
 
-let list = [[1, 2, 3], [4, 5, 6]]
+let simpleList = [ 1, 2, 3 ]
+print('Lists are now a thing: ' @ simpleList)
+print('They can be indexed (zero-based): ' @ simpleList[0])
+simpleList[0] = 100
+print('And they can be mutated: ' @ simpleList)
 
+let heterogeneousNestedList = [ [ 1, 2 ], [ 'three', 'four' ], [ print ] ]
+print('Since this is a dynamic scripting language, heterogeneous lists of any type are allowed: ' @ heterogeneousNestedList )
 
-list[1][1] = 100
-
-let reset = \(l, length) -> {
-    let index = length-1
-    if (index >= 0) {
-        l[index] = 0
-        reset(l, index)
-    }
-}
-
-reset(list, 2) |> print
-list |> print
+let listGenerator = [ _, 2, _, 4 ]
+print('But whats really cool is that argument holes can be used in a list literal to create a lambda:' @ listGenerator(1, 3))
+print('One more time! ' @ listGenerator(100, 300))
