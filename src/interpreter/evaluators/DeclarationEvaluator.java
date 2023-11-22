@@ -1,12 +1,13 @@
 package interpreter.evaluators;
 
 import interpreter.Interpreter;
+import interpreter.data.GObject;
 import model.Expression;
 
 public class DeclarationEvaluator implements ExpressionEvaluator<Expression.Declaration> {
     @Override
-    public Object evaluateExpression(Interpreter interpreter, Expression.Declaration expression) {
-        Object value = expression.initializer() == null
+    public GObject evaluateExpression(Interpreter interpreter, Expression.Declaration expression) {
+        GObject value = expression.initializer() == null
                 ? null
                 : interpreter.evaluateExpression(expression.initializer());
         interpreter.getCurrentScope().define(expression.variable().lexeme(), value);

@@ -2,6 +2,9 @@ package tokenizer;
 
 import com.google.inject.Inject;
 import error.ErrorReporter;
+import interpreter.data.GDouble;
+import interpreter.data.GInteger;
+import interpreter.data.GObject;
 import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Token;
@@ -151,6 +154,7 @@ public class LexicalTokenizer implements Tokenizer {
             case ',' -> createToken(COMMA);
             case '+' -> createToken(PLUS);
             case '*' -> createToken(STAR);
+            case '@' -> createToken(CONCAT);
             case ';' -> createToken(SEMICOLON);
             case '\\' -> createToken(BACK_SLASH);
 
@@ -243,15 +247,19 @@ public class LexicalTokenizer implements Tokenizer {
         while (isDigit(peek())) advanceAndGetCurrent();
 
         // Look for decimal point
+        boolean isDouble = false;
         if (peek() == '.' && isDigit(peekNext())) {
             advanceAndGetCurrent(); // consume the decimal point
+            isDouble = true;
             while (isDigit(peek())) advanceAndGetCurrent();
         }
 
         String numberWithUnderscores = source.substring(start, current);
         String cleanedNumber = numberWithUnderscores.replaceAll("_", "");
-        Double value = Double.parseDouble(cleanedNumber);
-        return createToken(NUMBER, value);
+
+        return isDouble
+                ? createToken(DOUBLE, Double.parseDouble(cleanedNumber))
+                : createToken(INTEGER, Integer.parseInt(cleanedNumber));
     }
 
     private Optional<Token> consumeIdentifier() {

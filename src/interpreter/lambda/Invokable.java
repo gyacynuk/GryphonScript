@@ -1,10 +1,11 @@
 package interpreter.lambda;
 
 import interpreter.Interpreter;
+import interpreter.data.GObject;
 
 import java.util.List;
 
 public interface Invokable {
     int arity();
-    Object call(Interpreter interpreter, List<Object> arguments);
+    GObject call(Interpreter interpreter, List<GObject> arguments);
 }

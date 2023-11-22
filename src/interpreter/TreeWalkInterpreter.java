@@ -1,6 +1,7 @@
 package interpreter;
 
 import error.ErrorReporter;
+import interpreter.data.GObject;
 import interpreter.errors.RuntimeError;
 import interpreter.evaluators.*;
 import interpreter.lambda.Invokable;
@@ -43,13 +44,13 @@ public class TreeWalkInterpreter implements Interpreter {
     private final IndexEvaluator indexEvaluator;
 
     @Override
-    public Object executeProgram(List<Expression> expressions) {
+    public GObject executeProgram(List<Expression> expressions) {
         // Populate global environment with native functions
         nativeFunctions.getNativeFunctions().forEach(nativeFunction -> globalEnvironment.define(
                 nativeFunction.name(),
                 nativeFunction.lambda()));
 
-        Object finalExpressionResult = null;
+        GObject finalExpressionResult = null;
         try {
             for (Expression expression : expressions) {
                 finalExpressionResult = evaluateExpression(expression);
@@ -61,7 +62,7 @@ public class TreeWalkInterpreter implements Interpreter {
     }
 
     @Override
-    public Object evaluateExpression(Expression expression) {
+    public GObject evaluateExpression(Expression expression) {
         return switch (expression) {
             case Expression.Literal literalExpression -> literalEvaluator
                     .evaluateExpression(this, literalExpression);
@@ -93,7 +94,6 @@ public class TreeWalkInterpreter implements Interpreter {
                     .evaluateExpression(this, lambdaExpression);
             case Expression.Index indexExpression -> indexEvaluator
                     .evaluateExpression(this, indexExpression);
-            case Expression.ArgumentHole argumentHoleExpression -> argumentHoleExpression;
         };
     }
 
@@ -103,7 +103,7 @@ public class TreeWalkInterpreter implements Interpreter {
     }
 
     @Override
-    public void assignStackVariable(Expression.Assignment expression, Object value) {
+    public void assignStackVariable(Expression.Assignment expression, GObject value) {
         if (stackDepthMap.containsKey(expression)) {
             currentEnvironment.assignAtAncestor(stackDepthMap.get(expression), expression.variable(), value);
         } else {
@@ -112,7 +112,7 @@ public class TreeWalkInterpreter implements Interpreter {
     }
 
     @Override
-    public Object lookUpStackVariable(Expression.Variable variable) {
+    public GObject lookUpStackVariable(Expression.Variable variable) {
         if (stackDepthMap.containsKey(variable)) {
             return currentEnvironment.getAt(stackDepthMap.get(variable), variable.name().lexeme());
         } else {
@@ -126,12 +126,12 @@ public class TreeWalkInterpreter implements Interpreter {
     }
 
     @Override
-    public Object evaluateExpressionInNewScope(Supplier<Object> expressionEvaluator) {
+    public GObject evaluateExpressionInNewScope(Supplier<GObject> expressionEvaluator) {
         return evaluateExpressionInGivenScope(expressionEvaluator, new Environment(currentEnvironment));
     }
 
     @Override
-    public Object evaluateExpressionInGivenScope(Supplier<Object> expressionEvaluator, Environment scope) {
+    public GObject evaluateExpressionInGivenScope(Supplier<GObject> expressionEvaluator, Environment scope) {
         Environment previousEnvironment = currentEnvironment;
         currentEnvironment = scope;
         try {
@@ -142,7 +142,7 @@ public class TreeWalkInterpreter implements Interpreter {
     }
 
     @Override
-    public Object invokeLambda(Invokable invokable, List<Object> arguments, Token token) {
+    public GObject invokeLambda(Invokable invokable, List<GObject> arguments, Token token) {
         if (arguments.size() != invokable.arity()) {
             throw new RuntimeError(token, String.format("Expected %d arguments but got %d.", invokable.arity(), arguments.size()));
         }

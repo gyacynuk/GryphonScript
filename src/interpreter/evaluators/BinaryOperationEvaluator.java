@@ -2,6 +2,9 @@ package interpreter.evaluators;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
+import interpreter.data.GBoolean;
+import interpreter.data.GObject;
+import interpreter.data.GString;
 import interpreter.errors.RuntimeError;
 import model.Expression;
 
@@ -9,31 +12,30 @@ import java.util.Objects;
 
 public class BinaryOperationEvaluator implements ExpressionEvaluator<Expression.Binary.Operation> {
     @Override
-    public Object evaluateExpression(Interpreter interpreter, Expression.Binary.Operation expression) {
-        Object left = interpreter.evaluateExpression(expression.left());
-        Object right = interpreter.evaluateExpression(expression.right());
+    public GObject evaluateExpression(Interpreter interpreter, Expression.Binary.Operation expression) {
+        GObject left = interpreter.evaluateExpression(expression.left());
+        GObject right = interpreter.evaluateExpression(expression.right());
 
-        var doubleCheck = InterpreterUtils.numericEnforcementBiFunctionDecorator(expression.operator(), left, right);
+        var numericEnforcementDecorator = InterpreterUtils
+                .numericEnforcementBiFunctionDecorator(expression.operator(), left, right);
         return switch (expression.operator().type()) {
-            case GREATER -> doubleCheck.apply((l, r) -> l > r);
-            case GREATER_EQUAL -> doubleCheck.apply((l, r) -> l >= r);
-            case LESS -> doubleCheck.apply((l, r) -> l < r);
-            case LESS_EQUAL -> doubleCheck.apply((l, r) -> l <= r);
-            case MINUS -> doubleCheck.apply((l, r) -> l - r);
-            case SLASH -> doubleCheck.apply((l, r) -> l / r);
-            case STAR -> doubleCheck.apply((l, r) -> l * r);
-            case PLUS -> {
-                if (left instanceof String || right instanceof String) {
-                    yield InterpreterUtils.stringify(left) + InterpreterUtils.stringify(right);
-                } else if (left instanceof Double l && right instanceof Double r) {
-                    yield l + r;
-                }
-                else {
-                    throw new RuntimeError(expression.operator(), "No '+' operator definition for the given operand types");
+            case GREATER -> numericEnforcementDecorator.apply(GObject.Numeric::greaterThan);
+            case GREATER_EQUAL -> numericEnforcementDecorator.apply(GObject.Numeric::greaterThanOrEqualTo);
+            case LESS -> numericEnforcementDecorator.apply(GObject.Numeric::lessThan);
+            case LESS_EQUAL -> numericEnforcementDecorator.apply(GObject.Numeric::lessThanOrEqualTo);
+            case PLUS -> numericEnforcementDecorator.apply(GObject.Numeric::add);
+            case MINUS -> numericEnforcementDecorator.apply(GObject.Numeric::subtract);
+            case SLASH -> numericEnforcementDecorator.apply(GObject.Numeric::divide);
+            case STAR -> numericEnforcementDecorator.apply(GObject.Numeric::multiply);
+            case CONCAT -> {
+                if (left instanceof GString leftString) {
+                    yield new GString(leftString.value() + right.stringify());
+                } else {
+                    throw new RuntimeError(expression.operator(), "Concat operator '@' must have a string as the left-hand operand");
                 }
             }
-            case EQUAL_EQUAL -> Objects.equals(left, right);
-            case BANG_EQUAL -> !Objects.equals(left, right);
+            case EQUAL_EQUAL -> new GBoolean(Objects.equals(left.value(), right.value()));
+            case BANG_EQUAL -> new GBoolean(!Objects.equals(left.value(), right.value()));
             default -> throw new RuntimeError(expression.operator(), "Unknown binary operator");
         };
     }

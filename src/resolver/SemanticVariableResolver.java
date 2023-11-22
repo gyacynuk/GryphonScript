@@ -32,7 +32,6 @@ public class SemanticVariableResolver implements Resolver {
 
     private void resolveExpression(Expression expression) {
         switch (expression) {
-            case Expression.ArgumentHole ignored -> { /* do nothing */ }
             case Expression.Literal ignored -> { /* do nothing */ }
             case Expression.Assignment assignment -> {
                 resolveExpression(assignment.value());

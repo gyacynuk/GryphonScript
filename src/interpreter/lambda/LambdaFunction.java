@@ -1,6 +1,9 @@
 package interpreter.lambda;
 
 import interpreter.Interpreter;
+import interpreter.data.GHole;
+import interpreter.data.GLambda;
+import interpreter.data.GObject;
 import interpreter.runtime.Environment;
 import lombok.RequiredArgsConstructor;
 import model.Expression;
@@ -25,7 +28,7 @@ public class LambdaFunction implements Invokable {
     }
 
     @Override
-    public Object call(Interpreter interpreter, List<Object> arguments) {
+    public GObject call(Interpreter interpreter, List<GObject> arguments) {
         return interpreter.evaluateExpressionInGivenScope(() -> {
             var lambdaScope = interpreter.getCurrentScope();
 
@@ -38,7 +41,7 @@ public class LambdaFunction implements Invokable {
                 var parameter = lambda.parameters().get(i);
                 var argument = arguments.get(i);
 
-                if (argument == Expression.HOLE) {
+                if (argument == GHole.INSTANCE) {
                     argumentHoles.add(parameter);
                 } else {
                     lambdaScope.define(parameter.lexeme(), argument);
@@ -48,7 +51,7 @@ public class LambdaFunction implements Invokable {
             // All args provided, evaluate lambda
             if (argumentHoles.isEmpty()) return interpreter.evaluateExpression(lambda.body());
             // Argument holes provided, partially apply
-            else return partiallyApply(argumentHoles, lambdaScope);
+            else return new GLambda(partiallyApply(argumentHoles, lambdaScope));
         }, new Environment(closure));
     }
 

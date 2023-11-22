@@ -4,6 +4,7 @@ public enum TokenType {
     // Single-character tokens
     LEFT_BRACKET, RIGHT_BRACKET, LEFT_CURLY, RIGHT_CURLY, LEFT_SQUARE, RIGHT_SQUARE,
     MINUS, PLUS, SLASH, STAR,
+    CONCAT,
     COMMA, DOT, SEMICOLON, UNDERSCORE, BACK_SLASH,
 
     // Single and Double character tokens
@@ -15,7 +16,7 @@ public enum TokenType {
     INFIX, ARROW,
 
     // Literals
-    IDENTIFIER, STRING, NUMBER, // TODO: differentiate between Integers and Decimals (use INTEGERS and doubles, since I want to use ints for array indexing)
+    IDENTIFIER, STRING, INTEGER, DOUBLE,
 
 
     // Keywords

@@ -1,19 +1,21 @@
 package model;
 
+import interpreter.data.GHole;
+import interpreter.data.GObject;
+
 import java.util.List;
 
 public sealed interface Expression {
-    Expression.ArgumentHole HOLE = new ArgumentHole();
+    Expression.Literal HOLE = new Literal(GHole.INSTANCE);
     Expression.Literal NIL = new Literal(null);
 
     /**
      * A literal value, which can take the form of:
-     *   → NUMBER | STRING | "true" | "false" | "nil"
+     *   → INTEGER| DOUBLE | STRING | "true" | "false" | "nil"
      *
      * @param value the literal value represented in Java. For instance, a Java String, or a Java Boolean.
      */
-    record Literal(Object value) implements Expression {}
-    record ArgumentHole() implements Expression {}
+    record Literal(GObject value) implements Expression {}
     record Variable(Token name) implements Expression {}
     record Declaration(Token variable, Expression initializer) implements Expression {}
     record Assignment(Token variable, Expression value) implements Expression {}

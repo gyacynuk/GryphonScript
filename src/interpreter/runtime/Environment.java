@@ -1,5 +1,6 @@
 package interpreter.runtime;
 
+import interpreter.data.GObject;
 import interpreter.errors.RuntimeError;
 import lombok.RequiredArgsConstructor;
 import model.Token;
@@ -12,7 +13,7 @@ public class Environment {
     private static final String UNDEFINED_VARIABLE_ERROR_MESSAGE_TEMPLATE = "Undefined variable '%s'";
 
     private final Environment enclosingEnvironment;
-    private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, GObject> values = new HashMap<>();
 
     public static Environment createGlobalEnvironment() {
         return new Environment(null);
@@ -22,11 +23,11 @@ public class Environment {
         other.values.forEach(this::define);
     }
 
-    public void define(String name, Object value) {
+    public void define(String name, GObject value) {
         values.put(name, value);
     }
 
-    public void assign(Token name, Object value) {
+    public void assign(Token name, GObject value) {
         var key = name.lexeme();
         if (values.containsKey(key)) {
             values.put(key, value);
@@ -41,7 +42,7 @@ public class Environment {
         }
     }
 
-    public Object get(Token name) {
+    public GObject get(Token name) {
         var key = name.lexeme();
         if (values.containsKey(key)) {
             return values.get(key);
@@ -52,11 +53,11 @@ public class Environment {
         else throw new RuntimeError(name, String.format(UNDEFINED_VARIABLE_ERROR_MESSAGE_TEMPLATE, key));
     }
 
-    public Object getAt(int distance, String name) {
+    public GObject getAt(int distance, String name) {
         return getAncestorAtDistance(distance).values.get(name);
     }
 
-    public void assignAtAncestor(int distance, Token name, Object value) {
+    public void assignAtAncestor(int distance, Token name, GObject value) {
         getAncestorAtDistance(distance).values.put(name.lexeme(), value);
     }
 

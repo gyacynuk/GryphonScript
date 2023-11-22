@@ -1,5 +1,8 @@
 package interpreter;
 
+import interpreter.data.GBoolean;
+import interpreter.data.GNil;
+import interpreter.data.GObject;
 import interpreter.errors.RuntimeError;
 import model.Token;
 
@@ -13,44 +16,30 @@ public class InterpreterUtils {
      * @param o object under truthiness evaluation
      * @return true if truthy, false otherwise
      */
-    public static boolean isTruthy(Object o) {
+    public static boolean isTruthy(GObject o) {
         return switch (o) {
             case null -> false;
-            case Boolean b -> b;
+            case GNil ignored -> false;
+            case GBoolean gBoolean -> gBoolean.value();
             default -> true;
         };
     }
 
-    public static String stringify(Object o) {
-        return switch (o) {
-            case null -> "nil";
-            case String s -> s;
-            case Double d -> {
-                String text = d.toString();
-                if (text.endsWith(".0")) {
-                    text = text.substring(0, text.length() - 2);
-                }
-                yield text;
-            }
-            default -> o.toString();
-        };
-    }
-
-    public static Function<Function<Double, Object>, Object> numericEnforcementFunctionDecorator(
+    public static Function<Function<GObject.Numeric, GObject>, GObject> numericEnforcementFunctionDecorator(
             Token operator, Object operand) {
-        return (Function<Double, Object> doubleOperation) -> {
-            if (operand instanceof Double doubleOperand) {
-                return doubleOperation.apply(doubleOperand);
+        return (Function<GObject.Numeric, GObject> numericOperation) -> {
+            if (operand instanceof GObject.Numeric numeric) {
+                return numericOperation.apply(numeric);
             }
             throw new RuntimeError(operator, "Operand must be a number");
         };
     }
 
-    public static Function<BiFunction<Double, Double, Object>, Object> numericEnforcementBiFunctionDecorator(
-            Token operator, Object operandLeft, Object operandRight) {
-        return (BiFunction<Double, Double, Object> doubleOperation) -> {
-            if (operandLeft instanceof Double doubleOperandLeft && operandRight instanceof Double doubleOperandRight) {
-                return doubleOperation.apply(doubleOperandLeft, doubleOperandRight);
+    public static Function<BiFunction<GObject.Numeric, GObject.Numeric, GObject>, GObject> numericEnforcementBiFunctionDecorator(
+            Token operator, GObject operandLeft, GObject operandRight) {
+        return (BiFunction<GObject.Numeric, GObject.Numeric, GObject> numericOperation) -> {
+            if (operandLeft instanceof GObject.Numeric numericLeft && operandRight instanceof GObject.Numeric numericRight) {
+                return numericOperation.apply(numericLeft, numericRight);
             }
             throw new RuntimeError(operator, "Operands must be numbers");
         };

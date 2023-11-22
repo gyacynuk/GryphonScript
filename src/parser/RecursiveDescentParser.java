@@ -1,6 +1,10 @@
 package parser;
 
 import error.ErrorReporter;
+import interpreter.data.GBoolean;
+import interpreter.data.GDouble;
+import interpreter.data.GInteger;
+import interpreter.data.GString;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import model.BinaryExpressionInitializer;
@@ -205,7 +209,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         return generateLeftAssociativeBinaryGrammarRuleParser(
                 BinaryExpressionInitializer::initOperation,
                 this::parseFactorExpression,
-                MINUS, PLUS);
+                MINUS, PLUS, CONCAT);
     }
 
     private Expression parseFactorExpression() {
@@ -227,14 +231,6 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
 
     private Expression parseInvocationExpression() {
         Expression expr = parsePrimaryExpression();
-
-        // TODO: break out match and matchAndConsume as separate functions
-        //  Then, use them here to match on "(" or "[" to implement the getAtIndex operation
-        //  Note that this will not implement array literals
-
-//        while (matchAndConsumeAny(LEFT_BRACKET)) {
-//            expr = finishCall(expr);
-//        }
 
         while (matchAny(LEFT_BRACKET, LEFT_SQUARE)) {
             if (matchAndConsumeAny(LEFT_BRACKET)) expr = finishInvocation(expr);
@@ -268,9 +264,11 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     private Expression parsePrimaryExpression() {
         // Literals
         if (matchAndConsumeAny(NIL)) return Expression.NIL;
-        if (matchAndConsumeAny(TRUE)) return new Expression.Literal(true);
-        if (matchAndConsumeAny(FALSE)) return new Expression.Literal(false);
-        if (matchAndConsumeAny(NUMBER, STRING)) return new Expression.Literal(previous().literal());
+        if (matchAndConsumeAny(TRUE)) return new Expression.Literal(new GBoolean(true));
+        if (matchAndConsumeAny(FALSE)) return new Expression.Literal(new GBoolean(false));
+        if (matchAndConsumeAny(INTEGER)) return new Expression.Literal(new GInteger((Integer) previous().literal()));
+        if (matchAndConsumeAny(DOUBLE)) return new Expression.Literal(new GDouble((Double) previous().literal()));
+        if (matchAndConsumeAny(STRING)) return new Expression.Literal(new GString((String) previous().literal()));
 
         // Identifiers
         if (matchAndConsumeAny(UNDERSCORE)) return Expression.HOLE;

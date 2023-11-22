@@ -2,6 +2,9 @@ package interpreter.nativeFunctions;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
+import interpreter.data.GDouble;
+import interpreter.data.GLambda;
+import interpreter.data.GObject;
 import interpreter.lambda.Invokable;
 import lombok.NoArgsConstructor;
 
@@ -10,28 +13,33 @@ import java.util.List;
 
 @NoArgsConstructor
 public class NativeFunctions {
-    public record NativeFunction(String name, Invokable lambda) {}
+    public record NativeFunction(String name, GLambda lambda) {}
 
     public List<NativeFunction> getNativeFunctions() {
         return Arrays.asList(
-                printFunction(),
+                print(),
                 milliTime());
     }
 
-    private NativeFunction printFunction() {
+    private NativeFunction print() {
         var lambda = new Invokable() {
             @Override
             public int arity() { return 1; }
 
             @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                Object arg = arguments.get(0);
-                System.out.println(InterpreterUtils.stringify(arg));
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                GObject arg = arguments.get(0);
+                System.out.println(arg.stringify());
                 return arg;
+            }
+
+            @Override
+            public String toString() {
+                return "<native-lambda>";
             }
         };
 
-        return new NativeFunction("print", lambda);
+        return new NativeFunction("print", new GLambda(lambda));
     }
 
     private NativeFunction milliTime() {
@@ -40,11 +48,16 @@ public class NativeFunctions {
             public int arity() { return 0; }
 
             @Override
-            public Object call(Interpreter interpreter, List<Object> arguments) {
-                return (double) System.currentTimeMillis();
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                return new GDouble((double) System.currentTimeMillis());
+            }
+
+            @Override
+            public String toString() {
+                return "<native-lambda>";
             }
         };
 
-        return new NativeFunction("milliTime", lambda);
+        return new NativeFunction("milliTime", new GLambda(lambda));
     }
 }
