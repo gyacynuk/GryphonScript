@@ -16,11 +16,6 @@ import java.util.List;
 public class LambdaFunction implements Invokable {
     private final Expression.Lambda lambda;
     private final Environment closure;
-    private final Environment partialArguments;
-
-    public LambdaFunction(Expression.Lambda lambda, Environment closure) {
-        this(lambda, closure, new Environment(null));
-    }
 
     @Override
     public int arity() {
@@ -32,31 +27,14 @@ public class LambdaFunction implements Invokable {
         return interpreter.evaluateExpressionInGivenScope(() -> {
             var lambdaScope = interpreter.getCurrentScope();
 
-            // Copy over any existing partially applied arguments
-            lambdaScope.shallowCopyFrom(partialArguments);
-
-            // Define lambda parameters from provided arguments
-            List<Token> argumentHoles = new ArrayList<>();
+            // Define lambda parameters from  arguments
             for (int i = 0; i < arguments.size(); i ++) {
                 var parameter = lambda.parameters().get(i);
                 var argument = arguments.get(i);
-
-                if (argument == GHole.INSTANCE) {
-                    argumentHoles.add(parameter);
-                } else {
-                    lambdaScope.define(parameter.lexeme(), argument);
-                }
+                lambdaScope.define(parameter.lexeme(), argument);
             }
 
-            // All args provided, evaluate lambda
-            if (argumentHoles.isEmpty()) return interpreter.evaluateExpression(lambda.body());
-            // Argument holes provided, partially apply
-            else return new GLambda(partiallyApply(argumentHoles, lambdaScope));
+            return interpreter.evaluateExpression(lambda.body());
         }, new Environment(closure));
-    }
-
-    private LambdaFunction partiallyApply(List<Token> argumentHoles, Environment partialArgumentScope) {
-        Expression.Lambda partiallyAppliedLambda = new Expression.Lambda(argumentHoles, lambda.body());
-        return new LambdaFunction(partiallyAppliedLambda, closure, partialArgumentScope);
     }
 }

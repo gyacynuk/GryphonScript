@@ -1,6 +1,11 @@
 let add = \(a, b) -> a + b
 let add5 = add(_, 5)
+let doSomething = _(1, 2)
 let modelNumber = add(600, 70) |> add5
+
+print('Doing something ' @ add(
+    doSomething(add),
+    doSomething(\(a, b) -> a - b)))
 
 'The best motorcycle is the Daytona ' @ modelNumber @ 'r' |> print
 
@@ -16,3 +21,5 @@ print('Since this is a dynamic scripting language, heterogeneous lists of any ty
 let listGenerator = [ _, 2, _, 4 ]
 print('But whats really cool is that argument holes can be used in a list literal to create a lambda:' @ listGenerator(1, 3))
 print('One more time! ' @ listGenerator(100, 300))
+
+let a = _(1)

@@ -12,8 +12,7 @@ import java.util.List;
 @Singleton
 @NoArgsConstructor
 public class ListLambdaHoleDesugarer implements Desugarer {
-
-    private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "generated-list-lambda-parameter-token-%d";
+    private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
     @Override
     public List<Expression> desugar(List<Expression> expressions) {
@@ -66,12 +65,7 @@ public class ListLambdaHoleDesugarer implements Desugarer {
             case Expression.While whileExpression -> new Expression.While(
                     desugarExpression(whileExpression.condition()),
                     desugarExpression(whileExpression.body()));
-            case Expression.Invocation invocation -> new Expression.Invocation(
-                    desugarExpression(invocation.callee()),
-                    invocation.closingBracket(),
-                    invocation.arguments().stream()
-                            .map(this::desugarExpression)
-                            .toList());
+            case Expression.Invocation invocation -> desugarInvocationIfContainsHoles(invocation);
             case Expression.Lambda lambda -> new Expression.Lambda(
                     lambda.parameters(),
                     desugarExpression(lambda.body()));
@@ -82,26 +76,39 @@ public class ListLambdaHoleDesugarer implements Desugarer {
     private Expression desugarListLiteralIfContainsHoles(Expression.ListLiteral expression) {
         if (expression.values().contains(Expression.HOLE)) {
             return generateListLambda(expression);
-        } else {
-            return expression;
         }
+        // Recurse on elements
+        return new Expression.ListLiteral(
+                expression.values().stream()
+                        .map(this::desugarExpression)
+                        .toList(),
+                expression.closingBracket());
+    }
+
+    private Expression desugarInvocationIfContainsHoles(Expression.Invocation expression) {
+        if (Expression.HOLE.equals(expression.callee()) || expression.arguments().contains(Expression.HOLE)) {
+            return generateInvocationLambda(expression);
+        }
+        // Recurse on subexpressions
+        return new Expression.Invocation(
+                desugarExpression(expression.callee()),
+                expression.closingBracket(),
+                expression.arguments().stream()
+                        .map(this::desugarExpression)
+                        .toList());
     }
 
     private Expression.Lambda generateListLambda(Expression.ListLiteral expression) {
         // Generate params
         int runningCount = 0;
-        List<Token> holeTokens = new ArrayList<>();
+        List<Token> holeTokenParams = new ArrayList<>();
         List<Expression> bodyElementExpressions = new ArrayList<>();
         for (Expression elementExpression : expression.values()) {
             if (elementExpression != Expression.HOLE) {
-                bodyElementExpressions.add(elementExpression);
+                bodyElementExpressions.add(desugarExpression(elementExpression));
             } else {
-                Token paramIdentifierToken = new Token(
-                        TokenType.IDENTIFIER,
-                        String.format(GENERATED_TOKEN_LEXEME_TEMPLATE, runningCount++),
-                        null,
-                        expression.closingBracket().line());
-                holeTokens.add(paramIdentifierToken);
+                Token paramIdentifierToken = generateParameterToken(runningCount++, expression.closingBracket().line());
+                holeTokenParams.add(paramIdentifierToken);
                 bodyElementExpressions.add(new Expression.Variable(paramIdentifierToken));
             }
         }
@@ -109,7 +116,50 @@ public class ListLambdaHoleDesugarer implements Desugarer {
         // Generate body
         Expression.ListLiteral body = new Expression.ListLiteral(bodyElementExpressions, expression.closingBracket());
 
-        return new Expression.Lambda(holeTokens, body);
+        return new Expression.Lambda(holeTokenParams, body);
+    }
+
+    private Expression.Lambda generateInvocationLambda(Expression.Invocation expression) {
+        int runningCount = 0;
+        List<Token> holeTokenParams = new ArrayList<>();
+
+        // Callee
+        Expression desugaredCallee;
+        if (expression.callee() == Expression.HOLE) {
+            Token calleeTokenParam = generateParameterToken(runningCount++, expression.closingBracket().line());
+            holeTokenParams.add(calleeTokenParam);
+            desugaredCallee = new Expression.Variable(calleeTokenParam);
+        } else {
+            desugaredCallee = desugarExpression(expression.callee());
+        }
+
+        // Arguments
+        List<Expression> desugaredArguments = new ArrayList<>();
+        for (Expression argumentExpression : expression.arguments()) {
+            if (argumentExpression != Expression.HOLE) {
+                desugaredArguments.add(desugarExpression(argumentExpression));
+            } else {
+                Token paramIdentifierToken = generateParameterToken(runningCount++, expression.closingBracket().line());
+                holeTokenParams.add(paramIdentifierToken);
+                desugaredArguments.add(new Expression.Variable(paramIdentifierToken));
+            }
+        }
+
+        // Generate body
+        Expression.Invocation body = new Expression.Invocation(
+                desugaredCallee,
+                expression.closingBracket(),
+                desugaredArguments);
+
+        return new Expression.Lambda(holeTokenParams, body);
+    }
+
+    private Token generateParameterToken(int tokenIndex, int lineNumber) {
+        return new Token(
+                TokenType.IDENTIFIER,
+                String.format(GENERATED_TOKEN_LEXEME_TEMPLATE, tokenIndex),
+                null,
+                lineNumber);
     }
 }
 

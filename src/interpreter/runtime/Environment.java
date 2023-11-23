@@ -19,10 +19,6 @@ public class Environment {
         return new Environment(null);
     }
 
-    public void shallowCopyFrom(Environment other) {
-        other.values.forEach(this::define);
-    }
-
     public void define(String name, GObject value) {
         values.put(name, value);
     }
