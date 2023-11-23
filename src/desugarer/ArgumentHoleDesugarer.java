@@ -2,16 +2,19 @@ package desugarer;
 
 import jakarta.inject.Singleton;
 import lombok.NoArgsConstructor;
+import model.BinaryExpressionInitializer;
 import model.Expression;
 import model.Token;
 import model.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 @Singleton
 @NoArgsConstructor
-public class ListLambdaHoleDesugarer implements Desugarer {
+public class ArgumentHoleDesugarer implements Desugarer {
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
     @Override
@@ -43,18 +46,7 @@ public class ListLambdaHoleDesugarer implements Desugarer {
             case Expression.Variable variable -> variable;
             case Expression.Group group -> new Expression.Group(desugarExpression(group.expression()));
             case Expression.Unary unary -> new Expression.Unary(unary.operator(), desugarExpression(unary.right()));
-            case Expression.Binary.Operation binary -> new Expression.Binary.Operation(
-                    desugarExpression(binary.left()),
-                    desugarExpression(binary.right()),
-                    binary.operator());
-            case Expression.Binary.Logical binary -> new Expression.Binary.Logical(
-                    desugarExpression(binary.left()),
-                    desugarExpression(binary.right()),
-                    binary.operator());
-            case Expression.Binary.Infix binary -> new Expression.Binary.Infix(
-                    desugarExpression(binary.left()),
-                    desugarExpression(binary.right()),
-                    binary.operator());
+            case Expression.Binary binary -> desugarBinaryIfContainsHoles(binary);
             case Expression.Block block -> new Expression.Block(block.expressions().stream()
                     .map(this::desugarExpression)
                     .toList());
@@ -83,6 +75,17 @@ public class ListLambdaHoleDesugarer implements Desugarer {
                         .map(this::desugarExpression)
                         .toList(),
                 expression.closingBracket());
+    }
+
+    private Expression desugarBinaryIfContainsHoles(Expression.Binary expression) {
+        if (Arrays.asList(expression.left(), expression.right()).contains(Expression.HOLE)) {
+            return generateBinaryLambda(expression);
+        }
+        return BinaryExpressionInitializer.getInitializerForExpression(expression).apply(
+                new BinaryExpressionInitializer.Args(
+                        desugarExpression(expression.left()),
+                        desugarExpression(expression.right()),
+                        expression.operator()));
     }
 
     private Expression desugarInvocationIfContainsHoles(Expression.Invocation expression) {
@@ -115,6 +118,40 @@ public class ListLambdaHoleDesugarer implements Desugarer {
 
         // Generate body
         Expression.ListLiteral body = new Expression.ListLiteral(bodyElementExpressions, expression.closingBracket());
+
+        return new Expression.Lambda(holeTokenParams, body);
+    }
+
+    private Expression.Lambda generateBinaryLambda(Expression.Binary expression) {
+        int runningCount = 0;
+        List<Token> holeTokenParams = new ArrayList<>();
+
+        // Left
+        Expression desugaredLeft;
+        if (expression.left() == Expression.HOLE) {
+            Token leftTokenParam = generateParameterToken(runningCount++, expression.operator().line());
+            holeTokenParams.add(leftTokenParam);
+            desugaredLeft = new Expression.Variable(leftTokenParam);
+        } else {
+            desugaredLeft = desugarExpression(expression.left());
+        }
+
+        // Right
+        Expression desugaredRight;
+        if (expression.right() == Expression.HOLE) {
+            Token rightTokenParam = generateParameterToken(runningCount++, expression.operator().line());
+            holeTokenParams.add(rightTokenParam);
+            desugaredRight = new Expression.Variable(rightTokenParam);
+        } else {
+            desugaredRight = desugarExpression(expression.right());
+        }
+
+        // Generate body
+        Expression.Binary body = BinaryExpressionInitializer.getInitializerForExpression(expression).apply(
+                new BinaryExpressionInitializer.Args(
+                        desugaredLeft,
+                        desugaredRight,
+                        expression.operator()));
 
         return new Expression.Lambda(holeTokenParams, body);
     }
