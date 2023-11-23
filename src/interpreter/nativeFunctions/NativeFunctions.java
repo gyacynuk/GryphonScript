@@ -1,9 +1,9 @@
 package interpreter.nativeFunctions;
 
 import interpreter.Interpreter;
-import interpreter.datatypes.GDouble;
-import interpreter.datatypes.GLambda;
-import interpreter.datatypes.GObject;
+import interpreter.datatypes.*;
+import interpreter.errors.RuntimeError;
+import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +17,8 @@ public class NativeFunctions {
     public List<NativeFunction> getNativeFunctions() {
         return Arrays.asList(
                 print(),
-                milliTime());
+                milliTime(),
+                size());
     }
 
     private NativeFunction print() {
@@ -58,5 +59,27 @@ public class NativeFunctions {
         };
 
         return new NativeFunction("milliTime", new GLambda(lambda));
+    }
+
+    private NativeFunction size() {
+        var lambda = new Invokable() {
+            @Override
+            public int arity() { return 1; }
+
+            @Override
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                if (arguments.get(0) instanceof GIndexable indexable) {
+                    return new GInteger(indexable.getSize());
+                }
+                throw new InvocationExecutionError("Can only invoke lambda 'call' on lists and structs");
+            }
+
+            @Override
+            public String toString() {
+                return "<native-lambda>";
+            }
+        };
+
+        return new NativeFunction("size", new GLambda(lambda));
     }
 }

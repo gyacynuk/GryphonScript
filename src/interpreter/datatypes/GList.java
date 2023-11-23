@@ -22,6 +22,11 @@ public record GList(List<GObject> value) implements GIndexable {
     }
 
     @Override
+    public int getSize() {
+        return value().size();
+    }
+
+    @Override
     public String stringify() {
         String stringifiedElements = value().stream().map(GObject::stringify).collect(Collectors.joining(","));
         return String.format("[%s]", stringifiedElements);

@@ -39,3 +39,17 @@ let pt = \() -> {
 }()
 
 print('String _ is now a _'('interpolation', 'thing'))
+
+print(size(simpleList))
+
+let printListElements = \(list) -> {
+    let helper = \(l, i) -> {
+        if (i < size(l)) {
+            print(l[i])
+            helper(l, i+1)
+        }
+    }
+    helper(list, 0)
+}
+
+listGenerator(100, 300) |> printListElements

@@ -4,6 +4,7 @@ import error.ErrorReporter;
 import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
 import interpreter.evaluators.*;
+import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
 import interpreter.nativeFunctions.NativeFunctions;
 import interpreter.runtime.Environment;
@@ -152,6 +153,10 @@ public class TreeWalkInterpreter implements Interpreter {
         if (arguments.size() != invokable.arity()) {
             throw new RuntimeError(token, String.format("Expected %d arguments but got %d.", invokable.arity(), arguments.size()));
         }
-        return invokable.call(this, arguments);
+        try {
+            return invokable.call(this, arguments);
+        } catch (InvocationExecutionError error) {
+            throw new RuntimeError(token, error.getMessage());
+        }
     }
 }
