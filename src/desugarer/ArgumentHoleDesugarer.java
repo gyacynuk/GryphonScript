@@ -17,6 +17,7 @@ import java.util.List;
 public class ArgumentHoleDesugarer extends BaseDesugarer {
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
+    @Override
     protected Expression desugarLiteral(Expression.Literal expression) {
         return switch (expression.value()) {
             case GString gString -> {
