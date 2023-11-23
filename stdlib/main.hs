@@ -22,7 +22,7 @@ let listGenerator = [ _, 2, _, 4 ]
 print('But whats really cool is that argument holes can be used in a list literal to create a lambda:' @ listGenerator(1, 3))
 print('One more time! ' @ listGenerator(100, 300))
 
-print('') print('') print('') print('')  print('') print('') print('')  print('')print('') print('') print('') print('') print('') print('')
+print('') print('-----') print('')
 
 let add10 = _ + 10
 print('100 + 10 = ' @ add10(100))
@@ -30,8 +30,12 @@ print('100 + 10 = ' @ add10(100))
 print('Or in other words...')
 print(100 |> _ + 10)
 
+print('') print('-----') print('')
 
+let pt = \() -> {
+    print('this\nis
+    a
+    \'test\'')
+}()
 
-
-
-print('') print('') print('') print('')  print('') print('') print('')  print('')print('') print('') print('') print('') print('') print('')
+print('String _ is now a _'('interpolation', 'thing'))

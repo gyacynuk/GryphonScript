@@ -31,7 +31,7 @@ public class GryphonScript {
     private final Interpreter interpreter;
 
     @Inject
-    public GryphonScript(ErrorReporter errorReporter, Tokenizer tokenizer, Parser parser, @Named("ListLambdaHoles") Desugarer desugarer, Resolver resolver, Interpreter interpreter) {
+    public GryphonScript(ErrorReporter errorReporter, Tokenizer tokenizer, Parser parser, Desugarer desugarer, Resolver resolver, Interpreter interpreter) {
         this.errorReporter = errorReporter;
         this.tokenizer = tokenizer;
         this.parser = parser;

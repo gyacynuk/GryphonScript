@@ -1,5 +1,6 @@
 package desugarer;
 
+import interpreter.datatypes.GString;
 import jakarta.inject.Singleton;
 import lombok.NoArgsConstructor;
 import model.BinaryExpressionInitializer;
@@ -10,62 +11,42 @@ import model.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 @Singleton
 @NoArgsConstructor
-public class ArgumentHoleDesugarer implements Desugarer {
+public class ArgumentHoleDesugarer extends BaseDesugarer {
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
-    @Override
-    public List<Expression> desugar(List<Expression> expressions) {
-        return expressions.stream()
-                .map(this::desugarExpression)
-                .toList();
-    }
+    protected Expression desugarLiteral(Expression.Literal expression) {
+        return switch (expression.value()) {
+            case GString gString -> {
+                List<String> subStrings = splitStringAtHoles(gString.value());
+                if (subStrings.size() == 1) {
+                    yield expression;
+                }
 
-    private Expression desugarExpression(Expression expression) {
-        return switch (expression) {
-            case Expression.Literal literal -> literal;
-            case Expression.ListLiteral listLiteral -> desugarListLiteralIfContainsHoles(listLiteral);
-            case Expression.Assignment assignment -> new Expression.Assignment(
-                    assignment.variable(),
-                    desugarExpression(assignment.value()));
-            case Expression.IndexAssignment indexAssignment -> new Expression.IndexAssignment(
-                    desugarExpression(indexAssignment.assignee()),
-                    desugarExpression(indexAssignment.index()),
-                    desugarExpression(indexAssignment.value()),
-                    indexAssignment.closingBracket());
-            case Expression.Index index -> new Expression.Index(
-                    desugarExpression(index.callee()),
-                    index.closingBracket(),
-                    desugarExpression(index.index()));
-            case Expression.Declaration declaration -> new Expression.Declaration(
-                    declaration.variable(),
-                    desugarExpression(declaration.initializer()));
-            case Expression.Variable variable -> variable;
-            case Expression.Group group -> new Expression.Group(desugarExpression(group.expression()));
-            case Expression.Unary unary -> new Expression.Unary(unary.operator(), desugarExpression(unary.right()));
-            case Expression.Binary binary -> desugarBinaryIfContainsHoles(binary);
-            case Expression.Block block -> new Expression.Block(block.expressions().stream()
-                    .map(this::desugarExpression)
-                    .toList());
-            case Expression.If ifExpression -> new Expression.If(
-                    desugarExpression(ifExpression.condition()),
-                    desugarExpression(ifExpression.thenBranch()),
-                    desugarExpression(ifExpression.elseBranch()));
-            case Expression.While whileExpression -> new Expression.While(
-                    desugarExpression(whileExpression.condition()),
-                    desugarExpression(whileExpression.body()));
-            case Expression.Invocation invocation -> desugarInvocationIfContainsHoles(invocation);
-            case Expression.Lambda lambda -> new Expression.Lambda(
-                    lambda.parameters(),
-                    desugarExpression(lambda.body()));
-            case null -> null;
+                List<Token> holeTokenParams = new ArrayList<>();
+                Expression body = new Expression.Literal(new GString(subStrings.get(0)));
+                for (int i = 1; i < subStrings.size(); i ++) {
+                    Token interpolationToken = generateParameterToken(i, -1);
+                    holeTokenParams.add(interpolationToken);
+                    body = new Expression.Binary.Operation(
+                            new Expression.Binary.Operation(
+                                    body,
+                                    new Expression.Variable(interpolationToken),
+                                    new Token(TokenType.CONCAT, null, null, -1)),
+                            new Expression.Literal(new GString(subStrings.get(i))),
+                            new Token(TokenType.CONCAT, null, null, -1));
+                }
+
+                yield new Expression.Lambda(holeTokenParams, body);
+            }
+            default -> expression;
         };
     }
 
-    private Expression desugarListLiteralIfContainsHoles(Expression.ListLiteral expression) {
+    @Override
+    protected Expression desugarListLiteral(Expression.ListLiteral expression) {
         if (expression.values().contains(Expression.HOLE)) {
             return generateListLambda(expression);
         }
@@ -77,7 +58,8 @@ public class ArgumentHoleDesugarer implements Desugarer {
                 expression.closingBracket());
     }
 
-    private Expression desugarBinaryIfContainsHoles(Expression.Binary expression) {
+    @Override
+    protected Expression desugarBinary(Expression.Binary expression) {
         if (Arrays.asList(expression.left(), expression.right()).contains(Expression.HOLE)) {
             return generateBinaryLambda(expression);
         }
@@ -88,7 +70,8 @@ public class ArgumentHoleDesugarer implements Desugarer {
                         expression.operator()));
     }
 
-    private Expression desugarInvocationIfContainsHoles(Expression.Invocation expression) {
+    @Override
+    protected Expression desugarInvocation(Expression.Invocation expression) {
         if (Expression.HOLE.equals(expression.callee()) || expression.arguments().contains(Expression.HOLE)) {
             return generateInvocationLambda(expression);
         }
@@ -99,6 +82,29 @@ public class ArgumentHoleDesugarer implements Desugarer {
                 expression.arguments().stream()
                         .map(this::desugarExpression)
                         .toList());
+    }
+
+    private List<String> splitStringAtHoles(String s) {
+        int i = 0;
+        List<String> result = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        while (i < s.length()) {
+            if (s.charAt(i) == '_') {
+                result.add(sb.toString());
+                sb = new StringBuilder();
+                i ++;
+            }
+            else if (s.charAt(i) == '\\' && i+1 < s.length() && s.charAt(i+1) == '_') {
+                sb.append('_');
+                i += 2; // Increment by 2 since we consume a backslash and the following character
+            }
+            else {
+                sb.append(s.charAt(i));
+                i ++;
+            }
+        }
+        result.add(sb.toString());
+        return result;
     }
 
     private Expression.Lambda generateListLambda(Expression.ListLiteral expression) {
@@ -199,4 +205,3 @@ public class ArgumentHoleDesugarer implements Desugarer {
                 lineNumber);
     }
 }
-

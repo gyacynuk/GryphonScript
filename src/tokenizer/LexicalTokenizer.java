@@ -6,12 +6,14 @@ import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Token;
 import model.TokenType;
+import parser.Parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static model.TokenType.*;
 import static model.TokenType.INFIX;
@@ -221,8 +223,28 @@ public class LexicalTokenizer implements Tokenizer {
     }
 
     private Optional<Token> consumeString() {
+        var sb = new StringBuilder();
+
         while (peek() != QUOTE_CHAR && !isAtEndOfFile()) {
-            if (peek() == '\n') lineNumber ++;
+            // Process escape characters
+            if (peek() == '\\') {
+                advanceAndGetCurrent();
+                switch (peek()) {
+                    case 'n' -> {
+                        lineNumber ++;
+                        sb.append('\n');
+                    }
+                    case 't' -> sb.append('\t');
+                    case '\'' -> sb.append('\'');
+                    default -> {
+                        sb.append('\\');
+                        sb.append(peek());
+                    }
+                }
+            } else {
+                if (peek() == '\n') lineNumber ++;
+                sb.append(peek());
+            }
             advanceAndGetCurrent();
         }
 
@@ -234,9 +256,7 @@ public class LexicalTokenizer implements Tokenizer {
         // Consume the closing '
         advanceAndGetCurrent();
 
-        // Trim the surrounding ''
-        String value = source.substring(start+1, current-1);
-        return createToken(STRING, value);
+        return createToken(STRING, sb.toString());
     }
 
     private Optional<Token> consumeNumber() {
