@@ -301,7 +301,9 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     private Expression parseInvocationExpression() {
         Expression expr = parsePrimaryExpression();
 
-        while (matchAny(LEFT_BRACKET, LEFT_SQUARE, DOT)) {
+        // Important to make sure that the opening invocation token is NOT on a new line. Otherwise, a group or array
+        // literal could be confused as an invocation on the expression at the previuos line
+        while (matchAny(LEFT_BRACKET, LEFT_SQUARE, DOT) && !peek().isOnNewLine()) {
             if (matchAndConsumeAny(LEFT_BRACKET)) expr = finishInvocation(expr);
             else if (matchAndConsumeAny(LEFT_SQUARE)) expr = finishIndexing(expr);
             else if (matchAndConsumeAny(DOT)) expr = finishDotIndexing(expr);

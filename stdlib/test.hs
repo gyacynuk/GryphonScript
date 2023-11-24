@@ -7,9 +7,10 @@ let fastFib = \(n) -> {
     let mem = [ 0, 1 ]
     let m = 1
     while (m < n) {
-        let [ pp, p ] = mem
-        mem = [ p, pp + p ]
         m = m + 1
+        let [ pp, p ] = mem
+        (mem = [ p, pp + p ])[1]
     }
-    mem[1]
 }
+
+print(fastFib(25))

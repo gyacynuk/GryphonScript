@@ -106,6 +106,6 @@ public class ExpansionDesugarer extends BaseDesugarer {
 
     private Token generateUniqueHiddenToken(Token associatedToken) {
         String lexeme = HIDDEN_DESTRUCTURE_VARIABLE_PREFIX + counter++;
-        return new Token(IDENTIFIER, lexeme, null, associatedToken.line());
+        return new Token(IDENTIFIER, lexeme, null, associatedToken.line(), false);
     }
 }

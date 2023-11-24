@@ -27,6 +27,7 @@ public class LexicalTokenizer implements Tokenizer {
 
     private int start = 0;
     private int current = 0;
+    private int prevLineNumber = 0;
     private int lineNumber = 1;
     private String source;
 
@@ -41,7 +42,7 @@ public class LexicalTokenizer implements Tokenizer {
             scanToken().ifPresent(tokens::add);
         }
 
-        tokens.add(new Token(EOF, "", null, lineNumber));
+        tokens.add(new Token(EOF, "", null, lineNumber, true));
         return tokens;
     }
 
@@ -50,6 +51,7 @@ public class LexicalTokenizer implements Tokenizer {
         start = 0;
         current = 0;
         lineNumber = 1;
+        prevLineNumber = 0;
     }
 
     private boolean isAtEndOfFile() {
@@ -111,7 +113,8 @@ public class LexicalTokenizer implements Tokenizer {
 
     private Optional<Token> createToken(TokenType type, Object literal) {
         String lexeme = source.substring(start, current);
-        return Optional.of(new Token(type, lexeme, literal, lineNumber));
+        boolean isOnNewLine = prevLineNumber < lineNumber;
+        return Optional.of(new Token(type, lexeme, literal, lineNumber, isOnNewLine));
     }
 
     /**
@@ -138,7 +141,7 @@ public class LexicalTokenizer implements Tokenizer {
     private Optional<Token> scanToken() {
         char c = advanceAndGetCurrent();
 
-        return switch (c) {
+        Optional<Token> token = switch (c) {
             // Match single-character tokens
             case '(' -> createToken(LEFT_BRACKET);
             case ')' -> createToken(RIGHT_BRACKET);
@@ -198,6 +201,13 @@ public class LexicalTokenizer implements Tokenizer {
                 }
             }
         };
+
+        // Only increase previous line number if we found a valid token
+        if (token.isPresent()) {
+            prevLineNumber = lineNumber;
+        }
+
+        return token;
     }
 
     private Optional<Token> consumeLeadingUnderscore() {

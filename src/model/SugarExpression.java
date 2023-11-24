@@ -11,7 +11,7 @@ public sealed interface SugarExpression extends Expression {
             @Override
             public Token getErrorReportingToken() {
                 return nullableVariable == null
-                        ? new Token(TokenType.NIL, "generated-token", null, -1)
+                        ? new Token(TokenType.NIL, "generated-token", null, -1, false)
                         : nullableVariable;
             }
         }
