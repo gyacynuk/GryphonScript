@@ -27,13 +27,7 @@ public class BinaryOperationEvaluator implements ExpressionEvaluator<Expression.
             case MINUS -> numericEnforcementDecorator.apply(GNumeric::subtract);
             case SLASH -> numericEnforcementDecorator.apply(GNumeric::divide);
             case STAR -> numericEnforcementDecorator.apply(GNumeric::multiply);
-            case STRING_CONCAT -> {
-                if (left instanceof GString leftString) {
-                    yield new GString(leftString.value() + right.stringify());
-                } else {
-                    throw new RuntimeError(expression.operator(), "Concat operator '@' must have a string as the left-hand operand");
-                }
-            }
+            case STRING_CONCAT -> new GString(left.stringify() + right.stringify());
             case LIST_CONCAT -> listEnforcementBiFunctionDecorator.apply(GList::concat);
             case EQUAL_EQUAL -> new GBoolean(Objects.equals(left.value(), right.value()));
             case BANG_EQUAL -> new GBoolean(!Objects.equals(left.value(), right.value()));
