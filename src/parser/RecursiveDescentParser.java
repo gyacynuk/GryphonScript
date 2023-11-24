@@ -1,19 +1,18 @@
 package parser;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import error.ErrorReporter;
 import interpreter.datatypes.GBoolean;
 import interpreter.datatypes.GDouble;
 import interpreter.datatypes.GInteger;
 import interpreter.datatypes.GString;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import model.BinaryExpressionInitializer;
-import model.Expression;
-import model.Token;
-import model.TokenType;
+
+import model.*;
 import parser.errors.ParseError;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,17 +47,85 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     }
 
     private Expression parseDeclaration() {
-        // TODO: match on '{' or '[' here for object/array destructuring. Destructuring should be an expression which
-        //  returns the sub-object or sub-array. For instance "let sub = let [a, b] = [1, 2, 3]" should be a valid
-        //  expression, where sub == [1, 2]
-        Token name = consume(IDENTIFIER, "Expected name name");
+        // Parse destructure declaration
+        if (matchAny(LEFT_SQUARE, LEFT_CURLY)) {
+            SugarExpression.Destructure destructure = parseDestructure(Collections.emptyList());
+            Token equals = consume(EQUAL, "Expected '=' after destructure declaration and before definition");
+            Expression initializer = parseExpressionStatement(); // Must be an expression (not another declaration) following a destructuring
+            return new SugarExpression.DestructureDeclaration(destructure, equals, initializer);
+        }
+        // Parse variable declaration
+        else {
+            Token name = consume(IDENTIFIER, "Expected variable name");
 
-        Expression initializer = null;
-        if (matchAndConsumeAny(EQUAL)) {
-            initializer = parseExpression();
+            Expression initializer = null;
+            if (matchAndConsumeAny(EQUAL)) {
+                initializer = parseExpression();
+            }
+
+            return new Expression.Declaration(name, initializer);
+        }
+    }
+
+    private SugarExpression.Destructure parseDestructure(List<Expression> context) {
+        if (matchAny(LEFT_SQUARE, LEFT_CURLY)) {
+            return matchAny(LEFT_SQUARE)
+                    ? parseArrayDestructure(context)
+                    : parseStructDestructure(context);
+        }
+        throw error(peek(), String.format("Expected destructuring declaration but found: %s", peek().lexeme()));
+    }
+
+    private SugarExpression.Destructure.ArrayDestructure parseArrayDestructure(List<Expression> context) {
+        Token openingBracket = consume(LEFT_SQUARE, "Expected array destructuring to begin with '['");
+        if (check(RIGHT_SQUARE)) {
+            throw error(peek(), "Empty array destructure declaration is not allowed");
         }
 
-        return new Expression.Declaration(name, initializer);
+        List<SugarExpression.ArrayDestructureField> fields = new ArrayList<>();
+        int runningCount = 0;
+        do {
+            Expression indexContext = new Expression.Literal(new GInteger(runningCount++));
+            List<Expression> newContext = new ArrayList<>(context);
+            newContext.add(indexContext);
+
+            if (matchAny(IDENTIFIER)) {
+                Token fieldName = consume(IDENTIFIER, "Expected identifier as field name in array destructure");
+                fields.add(new SugarExpression.ArrayDestructureField.FieldDeclaration(fieldName, newContext, null));
+            }
+            else {
+                fields.add(new SugarExpression.ArrayDestructureField.FieldDeclaration(null, newContext, parseDestructure(newContext)));
+            }
+        } while (matchAndConsumeAny(COMMA));
+
+        Token closingBracket = consume(RIGHT_SQUARE, "Expected array destructuring to end with ']'");
+        return new SugarExpression.Destructure.ArrayDestructure(fields, closingBracket);
+    }
+
+    private SugarExpression.Destructure.StructDestructure parseStructDestructure(List<Expression> context) {
+        consume(LEFT_CURLY, "Expected struct destructuring to begin with '{'");
+        if (check(RIGHT_CURLY)) {
+            throw error(peek(), "Empty struct destructure declaration is not allowed");
+        }
+
+        List<SugarExpression.StructDestructureField> fields = new ArrayList<>();
+        do {
+            Token fieldName = consume(IDENTIFIER, "Expected identifier for struct destructure field name");
+            List<Expression> newContext = new ArrayList<>(context);
+            newContext.add(new Expression.Literal(new GString(fieldName.lexeme())));
+            SugarExpression.Destructure nullableFieldValue = null;
+
+            // Allow for variable punning by optionally recursing on nested field
+            if (matchAny(COLON)) {
+                consume(COLON, "Expected colon after struct destructure field name");
+                nullableFieldValue = parseDestructure(newContext);
+            }
+
+            fields.add(new SugarExpression.StructDestructureField.FieldDeclaration(fieldName, newContext, nullableFieldValue));
+        } while (matchAndConsumeAny(COMMA));
+
+        Token closingBracket = consume(RIGHT_CURLY, "Expected struct destructuring to end with '}'");
+        return new SugarExpression.Destructure.StructDestructure(fields, closingBracket);
     }
 
     /**
@@ -287,12 +354,12 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
                 Expression fieldValue;
 
                 // Allow for variable punning
-                if (matchAny(COMMA)) {
-                    // Set value to a variable which references the field name in the current scope
-                    fieldValue = new Expression.Variable(fieldName);
-                } else {
+                if (matchAny(COLON)) {
                     consume(COLON, "Expected colon after struct field name, and before field value");
                     fieldValue = parseExpressionStatement();
+                } else {
+                    // Set value to a variable which references the field name in the current scope
+                    fieldValue = new Expression.Variable(fieldName);
                 }
 
                 fields.add(new Expression.StructFieldDeclaration(fieldName, fieldValue));

@@ -1,7 +1,9 @@
 package desugarer;
 
+import interpreter.errors.RuntimeError;
 import model.BinaryExpressionInitializer;
 import model.Expression;
+import model.SugarExpression;
 
 import java.util.List;
 
@@ -16,7 +18,7 @@ public abstract class BaseDesugarer implements Desugarer {
         return switch (expression) {
             case Expression.Literal literal -> desugarLiteral(literal);
             case Expression.ListLiteral listLiteral -> desugarListLiteral(listLiteral);
-            case Expression.StructFieldDeclaration structFieldDeclaration -> desugarStructFieldDeclaration(structFieldDeclaration);
+            case Expression.StructFieldDeclaration fieldDeclaration -> desugarStructFieldDeclaration(fieldDeclaration);
             case Expression.StructLiteral structLiteral -> desugarStructLiteral(structLiteral);
             case Expression.Assignment assignment -> desugarAssignment(assignment);
             case Expression.IndexAssignment indexAssignment -> desugarIndexAssignment(indexAssignment);
@@ -31,6 +33,7 @@ public abstract class BaseDesugarer implements Desugarer {
             case Expression.While whileExpression -> desugarWhile(whileExpression);
             case Expression.Invocation invocation -> desugarInvocation(invocation);
             case Expression.Lambda lambda -> desugarLambda(lambda);
+            case SugarExpression sugarExpression -> throw new RuntimeError(sugarExpression.getErrorReportingToken(), "A sugar expression was encountered in the BaseDesugarer, which caused it to panic. This expression cannot be desugared now, and should have been desugared in a previuos pass. This is a bug in the GryphonScipt language implementation.");
             case null -> null;
         };
     }
@@ -45,10 +48,10 @@ public abstract class BaseDesugarer implements Desugarer {
                 listLiteral.closingBracket());
     }
 
-    protected Expression desugarStructFieldDeclaration(Expression.StructFieldDeclaration structFieldDeclaration) {
+    protected Expression desugarStructFieldDeclaration(Expression.StructFieldDeclaration fieldDeclaration) {
         return new Expression.StructFieldDeclaration(
-                structFieldDeclaration.variable(),
-                desugarExpression(structFieldDeclaration.initializer()));
+                fieldDeclaration.variable(),
+                desugarExpression(fieldDeclaration.initializer()));
     }
 
     protected Expression desugarStructLiteral(Expression.StructLiteral structLiteral) {

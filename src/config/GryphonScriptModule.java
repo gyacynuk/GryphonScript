@@ -8,6 +8,7 @@ import com.google.inject.name.Names;
 import desugarer.Desugarer;
 import desugarer.ArgumentHoleDesugarer;
 import desugarer.DesugaringOrchestrator;
+import desugarer.ExpansionDesugarer;
 import interpreter.Interpreter;
 import interpreter.TreeWalkInterpreter;
 import model.Expression;
@@ -34,6 +35,7 @@ public class GryphonScriptModule extends AbstractModule {
     @Singleton
     public Desugarer desugaringOrchestratorFactory() {
         final List<Desugarer> orderedDesugarers = Arrays.asList(
+                new ExpansionDesugarer(),
                 new ArgumentHoleDesugarer());
         return new DesugaringOrchestrator(orderedDesugarers);
     }

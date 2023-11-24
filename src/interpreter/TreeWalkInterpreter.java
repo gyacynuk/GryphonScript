@@ -1,5 +1,7 @@
 package interpreter;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import error.ErrorReporter;
 import interpreter.datatypes.GObject;
 import interpreter.errors.RuntimeError;
@@ -8,10 +10,9 @@ import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
 import interpreter.nativeFunctions.NativeFunctions;
 import interpreter.runtime.Environment;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Expression;
+import model.SugarExpression;
 import model.Token;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 @Singleton
-@RequiredArgsConstructor(onConstructor_ = { @Inject })
+@RequiredArgsConstructor(onConstructor_ = { @Inject})
 public class TreeWalkInterpreter implements Interpreter {
     private final ErrorReporter errorReporter;
     private final NativeFunctions nativeFunctions;
@@ -73,8 +74,8 @@ public class TreeWalkInterpreter implements Interpreter {
                     .evaluateExpression(this, literalExpression);
             case Expression.ListLiteral listLiteralExpression -> listLiteralEvaluator
                     .evaluateExpression(this, listLiteralExpression);
-            case Expression.StructFieldDeclaration structFieldDeclarationExpression -> structFieldDeclarationEvaluator
-                    .evaluateExpression(this, structFieldDeclarationExpression);
+            case Expression.StructFieldDeclaration fieldDeclarationExpression -> structFieldDeclarationEvaluator
+                    .evaluateExpression(this, fieldDeclarationExpression);
             case Expression.StructLiteral structLiteralExpression -> structLiteralEvaluator
                     .evaluateExpression(this, structLiteralExpression);
             case Expression.Variable variableExpression -> variableEvaluator
@@ -107,6 +108,7 @@ public class TreeWalkInterpreter implements Interpreter {
                     .evaluateExpression(this, lambdaExpression);
             case Expression.Index indexExpression -> indexEvaluator
                     .evaluateExpression(this, indexExpression);
+            case SugarExpression sugarExpression -> throw new RuntimeError(sugarExpression.getErrorReportingToken(), "A sugar expression was encountered in the interpreter, which caused it to panic. This expression cannot be interpreted, and should have been desugared before interpretation. This is a bug in the GryphonScipt language implementation.");
         };
     }
 

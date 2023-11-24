@@ -5,7 +5,7 @@ import interpreter.datatypes.GObject;
 
 import java.util.List;
 
-public sealed interface Expression {
+public sealed interface Expression permits Expression.Assignment, Expression.Binary, Expression.Block, Expression.Declaration, Expression.Group, Expression.If, Expression.Index, Expression.IndexAssignment, Expression.Invocation, Expression.Lambda, Expression.ListLiteral, Expression.Literal, Expression.StructFieldDeclaration, Expression.StructLiteral, Expression.Unary, Expression.Variable, Expression.While, SugarExpression {
     Expression.Literal HOLE = new Literal(GHole.INSTANCE);
     Expression.Literal NIL = new Literal(null);
 

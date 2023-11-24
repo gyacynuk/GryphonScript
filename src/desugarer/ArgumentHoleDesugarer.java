@@ -1,7 +1,7 @@
 package desugarer;
 
+import com.google.inject.Singleton;
 import interpreter.datatypes.GString;
-import jakarta.inject.Singleton;
 import lombok.NoArgsConstructor;
 import model.BinaryExpressionInitializer;
 import model.Expression;
@@ -15,6 +15,7 @@ import java.util.List;
 @Singleton
 @NoArgsConstructor
 public class ArgumentHoleDesugarer extends BaseDesugarer {
+    // TODO: Add generated TokenType as well for improved debugging
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
     @Override

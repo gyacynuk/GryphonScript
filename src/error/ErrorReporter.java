@@ -1,7 +1,7 @@
 package error;
 
+import com.google.inject.Singleton;
 import interpreter.errors.RuntimeError;
-import jakarta.inject.Singleton;
 import model.Token;
 import model.TokenType;
 import lombok.Getter;

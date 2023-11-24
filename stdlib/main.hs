@@ -62,3 +62,12 @@ print(s['foo'])
 print(s.c.add(100, 1000))
 
 print(simpleList ++ simpleList)
+
+let { b } = s
+print(b)
+
+let s = { a: 'hello', b: 'world', c: { a: 'Im nested!', nums: [3, 1, 4, 1, 5, 9] } }
+let { b, c: { a } } = s
+print(b)
+print(a)
+

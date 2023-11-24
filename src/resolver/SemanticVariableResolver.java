@@ -1,11 +1,13 @@
 package resolver;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import error.ErrorReporter;
 import interpreter.Interpreter;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
+import interpreter.errors.RuntimeError;
 import lombok.RequiredArgsConstructor;
 import model.Expression;
+import model.SugarExpression;
 import model.Token;
 
 import java.util.*;
@@ -34,7 +36,7 @@ public class SemanticVariableResolver implements Resolver {
         switch (expression) {
             case Expression.Literal ignored -> { /* do nothing */ }
             case Expression.ListLiteral listLiteral -> listLiteral.values().forEach(this::resolveExpression);
-            case Expression.StructFieldDeclaration structFieldDeclaration -> resolveExpression(structFieldDeclaration.initializer());
+            case Expression.StructFieldDeclaration fieldDeclaration -> resolveExpression(fieldDeclaration.initializer());
             case Expression.StructLiteral structLiteral -> structLiteral.fields().forEach(this::resolveExpression);
             case Expression.Assignment assignment -> {
                 resolveExpression(assignment.value());
@@ -97,6 +99,7 @@ public class SemanticVariableResolver implements Resolver {
                 resolveExpression(lambda.body());
                 endScope();
             }
+            case SugarExpression sugarExpression -> throw new RuntimeError(sugarExpression.getErrorReportingToken(), "A sugar expression was encountered in the interpreter, which caused it to panic. This expression cannot be interpreted, and should have been desugared before interpretation. This is a bug in the GryphonScipt language implementation.");
         }
     }
 

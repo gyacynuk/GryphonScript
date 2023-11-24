@@ -76,13 +76,13 @@ public class GryphonScript {
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
-        if (DEBUG) System.out.println(expressions);
+        if (DEBUG) prettyPrint(expressions);
 
         expressions = desugarer.desugarAll(expressions);
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
-        if (DEBUG) System.out.println(expressions);
+        if (DEBUG) prettyPrint(expressions);
 
         resolver.resolveProgram(interpreter, expressions);
 
@@ -90,5 +90,10 @@ public class GryphonScript {
         if (errorReporter.isInError()) return;
 
         interpreter.executeProgram(expressions);
+    }
+
+    void prettyPrint(List<?> list) {
+        System.out.println();
+        list.forEach(System.out::println);
     }
 }

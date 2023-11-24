@@ -1,8 +1,8 @@
 package tokenizer;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import error.ErrorReporter;
-import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Token;
 import model.TokenType;
