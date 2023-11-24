@@ -33,8 +33,8 @@ public abstract class BaseDesugarer implements Desugarer {
             case Expression.While whileExpression -> desugarWhile(whileExpression);
             case Expression.Invocation invocation -> desugarInvocation(invocation);
             case Expression.Lambda lambda -> desugarLambda(lambda);
-            case SugarExpression sugarExpression -> throw new RuntimeError(sugarExpression.getErrorReportingToken(), "A sugar expression was encountered in the BaseDesugarer, which caused it to panic. This expression cannot be desugared now, and should have been desugared in a previuos pass. This is a bug in the GryphonScipt language implementation.");
-            case null -> null;
+            case SugarExpression sugarExpression -> desugarSugarExpression(sugarExpression);
+            case null -> null;  // Needed to support nullable nested expressions, like an If with no else expression
         };
     }
 
@@ -135,5 +135,11 @@ public abstract class BaseDesugarer implements Desugarer {
         return new Expression.Lambda(
                 lambda.parameters(),
                 desugarExpression(lambda.body()));
+    }
+
+    protected Expression desugarSugarExpression(SugarExpression sugarExpression) {
+        throw new RuntimeError(
+                sugarExpression.getErrorReportingToken(),
+                "A sugar expression was encountered in the BaseDesugarer, which caused it to panic. This expression cannot be desugared now, and should have been desugared in a previous pass. This is a bug in the GryphonScript language implementation.");
     }
 }

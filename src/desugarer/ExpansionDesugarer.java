@@ -18,8 +18,17 @@ public class ExpansionDesugarer extends BaseDesugarer {
     @Override
     public List<Expression> desugarAll(List<Expression> expressions) {
         return expressions.stream()
+                // Expand top-level expressions
                 .flatMap(expression -> desugarAndExpandExpression(expression).stream())
+                // Recurse to expand nested blocks
+                .map(super::desugarExpression)
                 .toList();
+    }
+
+    @Override
+    protected Expression desugarBlock(Expression.Block block) {
+        return new Expression.Block(
+                desugarAll(block.expressions()));
     }
 
     private List<Expression> desugarAndExpandExpression(Expression expression) {
