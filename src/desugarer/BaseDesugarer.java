@@ -6,7 +6,7 @@ import model.Expression;
 import java.util.List;
 
 public abstract class BaseDesugarer implements Desugarer {
-    public List<Expression> desugar(List<Expression> expressions) {
+    public List<Expression> desugarAll(List<Expression> expressions) {
         return expressions.stream()
                 .map(this::desugarExpression)
                 .toList();
@@ -16,6 +16,8 @@ public abstract class BaseDesugarer implements Desugarer {
         return switch (expression) {
             case Expression.Literal literal -> desugarLiteral(literal);
             case Expression.ListLiteral listLiteral -> desugarListLiteral(listLiteral);
+            case Expression.StructFieldDeclaration structFieldDeclaration -> desugarStructFieldDeclaration(structFieldDeclaration);
+            case Expression.StructLiteral structLiteral -> desugarStructLiteral(structLiteral);
             case Expression.Assignment assignment -> desugarAssignment(assignment);
             case Expression.IndexAssignment indexAssignment -> desugarIndexAssignment(indexAssignment);
             case Expression.Index index -> desugarIndex(index);
@@ -39,8 +41,20 @@ public abstract class BaseDesugarer implements Desugarer {
 
     protected Expression desugarListLiteral(Expression.ListLiteral listLiteral) {
         return new Expression.ListLiteral(
-                desugar(listLiteral.values()),
+                desugarAll(listLiteral.values()),
                 listLiteral.closingBracket());
+    }
+
+    protected Expression desugarStructFieldDeclaration(Expression.StructFieldDeclaration structFieldDeclaration) {
+        return new Expression.StructFieldDeclaration(
+                structFieldDeclaration.variable(),
+                desugarExpression(structFieldDeclaration.initializer()));
+    }
+
+    protected Expression desugarStructLiteral(Expression.StructLiteral structLiteral) {
+        return new Expression.StructLiteral(
+                desugarAll(structLiteral.fields()),
+                structLiteral.closingBracket());
     }
 
     protected Expression desugarAssignment(Expression.Assignment assignment) {
@@ -91,7 +105,7 @@ public abstract class BaseDesugarer implements Desugarer {
     }
 
     protected Expression desugarBlock(Expression.Block block) {
-        return new Expression.Block(desugar(block.expressions()));
+        return new Expression.Block(desugarAll(block.expressions()));
     }
 
     protected Expression desugarIf(Expression.If ifExpression) {
@@ -111,7 +125,7 @@ public abstract class BaseDesugarer implements Desugarer {
         return new Expression.Invocation(
                 desugarExpression(invocation.callee()),
                 invocation.closingBracket(),
-                desugar(invocation.arguments()));
+                desugarAll(invocation.arguments()));
     }
 
     protected Expression desugarLambda(Expression.Lambda lambda) {

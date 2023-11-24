@@ -34,6 +34,8 @@ public class SemanticVariableResolver implements Resolver {
         switch (expression) {
             case Expression.Literal ignored -> { /* do nothing */ }
             case Expression.ListLiteral listLiteral -> listLiteral.values().forEach(this::resolveExpression);
+            case Expression.StructFieldDeclaration structFieldDeclaration -> resolveExpression(structFieldDeclaration.initializer());
+            case Expression.StructLiteral structLiteral -> structLiteral.fields().forEach(this::resolveExpression);
             case Expression.Assignment assignment -> {
                 resolveExpression(assignment.value());
                 resolveCallStackScope(assignment, assignment.variable());

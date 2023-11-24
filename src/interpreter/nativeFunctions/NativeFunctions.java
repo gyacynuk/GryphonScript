@@ -12,6 +12,7 @@ import java.util.List;
 
 @NoArgsConstructor
 public class NativeFunctions {
+    private static final String NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE = "<native-lambda-arity-%d>";
     public record NativeFunction(String name, GLambda lambda) {}
 
     public List<NativeFunction> getNativeFunctions() {
@@ -35,7 +36,7 @@ public class NativeFunctions {
 
             @Override
             public String toString() {
-                return "<native-lambda>";
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
             }
         };
 
@@ -54,7 +55,7 @@ public class NativeFunctions {
 
             @Override
             public String toString() {
-                return "<native-lambda>";
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
             }
         };
 
@@ -76,7 +77,7 @@ public class NativeFunctions {
 
             @Override
             public String toString() {
-                return "<native-lambda>";
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
             }
         };
 

@@ -4,7 +4,7 @@ import error.Result;
 
 import java.util.function.Function;
 
-public record GString(String value) implements GIndexable {
+public record GString(String value) implements GObject, GIndexable {
     @Override
     public Result<GObject, String> getAtIndex(GObject index) {
         return validateIndexThenApply(index, i -> new GString(String.valueOf(value.charAt(i))));

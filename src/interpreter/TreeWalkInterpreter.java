@@ -30,6 +30,8 @@ public class TreeWalkInterpreter implements Interpreter {
 
     private final LiteralEvaluator literalEvaluator;
     private final ListLiteralEvaluator listLiteralEvaluator;
+    private final StructFieldDeclarationEvaluator structFieldDeclarationEvaluator;
+    private final StructLiteralEvaluator structLiteralEvaluator;
     private final VariableEvaluator variableEvaluator;
     private final DeclarationEvaluator declarationEvaluator;
     private final AssignmentEvaluator assignmentEvaluator;
@@ -71,6 +73,10 @@ public class TreeWalkInterpreter implements Interpreter {
                     .evaluateExpression(this, literalExpression);
             case Expression.ListLiteral listLiteralExpression -> listLiteralEvaluator
                     .evaluateExpression(this, listLiteralExpression);
+            case Expression.StructFieldDeclaration structFieldDeclarationExpression -> structFieldDeclarationEvaluator
+                    .evaluateExpression(this, structFieldDeclarationExpression);
+            case Expression.StructLiteral structLiteralExpression -> structLiteralEvaluator
+                    .evaluateExpression(this, structLiteralExpression);
             case Expression.Variable variableExpression -> variableEvaluator
                     .evaluateExpression(this, variableExpression);
             case Expression.Declaration declarationExpression -> declarationEvaluator

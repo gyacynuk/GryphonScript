@@ -112,8 +112,8 @@ public class LexicalTokenizer implements Tokenizer {
     }
 
     private Optional<Token> createToken(TokenType type, Object literal) {
-        String text = source.substring(start, current);
-        return Optional.of(new Token(type, text, literal, lineNumber));
+        String lexeme = source.substring(start, current);
+        return Optional.of(new Token(type, lexeme, literal, lineNumber));
     }
 
     /**
@@ -153,6 +153,7 @@ public class LexicalTokenizer implements Tokenizer {
             case '+' -> createToken(PLUS);
             case '*' -> createToken(STAR);
             case '@' -> createToken(CONCAT);
+            case ':' -> createToken(COLON);
             case ';' -> createToken(SEMICOLON);
             case '\\' -> createToken(BACK_SLASH);
 

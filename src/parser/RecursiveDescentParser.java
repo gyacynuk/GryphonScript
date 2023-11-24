@@ -272,6 +272,30 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         return new Expression.ListLiteral(elements, paren);
     }
 
+    private Expression.StructLiteral finishStructLiteral() {
+        List<Expression> fields = new ArrayList<>();
+        if (!check(RIGHT_CURLY)) {
+            do {
+                Token fieldName = consume(IDENTIFIER, "Expected identifier for struct literal field name");
+                Expression fieldValue;
+
+                // Allow for variable punning
+                if (matchAny(COMMA)) {
+                    // Set value to a variable which references the field name in the current scope
+                    fieldValue = new Expression.Variable(fieldName);
+                } else {
+                    consume(COLON, "Expected colon after struct field name, and before field value");
+                    fieldValue = parseExpressionStatement();
+                }
+
+                fields.add(new Expression.StructFieldDeclaration(fieldName, fieldValue));
+            } while (matchAndConsumeAny(COMMA));
+        }
+
+        Token paren = consume(RIGHT_CURLY, "Expected '}' to terminate struct literal");
+        return new Expression.StructLiteral(fields, paren);
+    }
+
     private Expression parsePrimaryExpression() {
         // Literals
         if (matchAndConsumeAny(NIL)) return Expression.NIL;
@@ -293,6 +317,8 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         }
         // Lists
         if (matchAndConsumeAny(LEFT_SQUARE)) return finishListLiteral();
+        // Structs
+        if (matchAndConsumeAny(LEFT_CURLY)) return finishStructLiteral();
 
         // Control keywords
         if (matchAndConsumeAny(IF)) return parseIfExpression();

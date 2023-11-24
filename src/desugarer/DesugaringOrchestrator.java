@@ -10,9 +10,9 @@ public class DesugaringOrchestrator implements Desugarer {
     private final List<Desugarer> desugarers;
 
     @Override
-    public List<Expression> desugar(List<Expression> expressions) {
+    public List<Expression> desugarAll(List<Expression> expressions) {
         for (Desugarer desugarer : desugarers) {
-            expressions = desugarer.desugar(expressions);
+            expressions = desugarer.desugarAll(expressions);
         }
         return expressions;
     }

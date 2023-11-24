@@ -53,3 +53,9 @@ let printListElements = \(list) -> {
 }
 
 listGenerator(100, 300) |> printListElements
+
+let s = { a: 'hello', b: 123, c: { add, a: 'I\'m nested!' } }
+print(s)
+s['foo'] = 'bar'
+print(s)
+print(s['foo'])

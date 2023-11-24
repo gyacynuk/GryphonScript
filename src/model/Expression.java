@@ -17,6 +17,8 @@ public sealed interface Expression {
      */
     record Literal(GObject value) implements Expression {}
     record ListLiteral(List<Expression> values, Token closingBracket) implements Expression {}
+    record StructFieldDeclaration(Token variable, Expression initializer) implements Expression {}
+    record StructLiteral(List<Expression> fields, Token closingBracket) implements Expression {}
     record Variable(Token name) implements Expression {}
     record Declaration(Token variable, Expression initializer) implements Expression {}
     record Assignment(Token variable, Expression value) implements Expression {}

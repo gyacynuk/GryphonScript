@@ -1,7 +1,6 @@
 package gryphon;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import desugarer.Desugarer;
 import error.ErrorReporter;
 import interpreter.Interpreter;
@@ -79,7 +78,7 @@ public class GryphonScript {
         if (errorReporter.isInError()) return;
         if (DEBUG) System.out.println(expressions);
 
-        expressions = desugarer.desugar(expressions);
+        expressions = desugarer.desugarAll(expressions);
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
