@@ -45,5 +45,5 @@ public sealed interface Expression {
     record While(Expression condition, Expression body) implements Expression {}
     record Lambda(List<Token> parameters, Expression body) implements Expression {}
     record Invocation(Expression callee, Token closingBracket, List<Expression> arguments) implements Expression {}
-    record Index(Expression callee, Token closingBracket, Expression index) implements Expression {}
+    record Index(Expression callee, Token closingBracketOrDot, Expression index) implements Expression {}
 }

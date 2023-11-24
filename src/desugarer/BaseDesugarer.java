@@ -74,7 +74,7 @@ public abstract class BaseDesugarer implements Desugarer {
     protected Expression desugarIndex(Expression.Index index) {
         return new Expression.Index(
                 desugarExpression(index.callee()),
-                index.closingBracket(),
+                index.closingBracketOrDot(),
                 desugarExpression(index.index()));
     }
 

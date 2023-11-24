@@ -14,13 +14,13 @@ public class IndexEvaluator implements ExpressionEvaluator<Expression.Index> {
         GObject index = interpreter.evaluateExpression(expression.index());
 
         if (!(callee instanceof GIndexable indexable)) {
-            throw new RuntimeError(expression.closingBracket(), "Cannot index a primitive data type or lambda, only lists and structs can be indexed");
+            throw new RuntimeError(expression.closingBracketOrDot(), "Cannot index a primitive data type or lambda, only lists and structs can be indexed");
         }
 
         Result<GObject, String> result = indexable.getAtIndex(index);
         return switch (result) {
             case Result.Success<GObject, String> success -> success.value();
-            case Result.Error<GObject, String> error -> throw new RuntimeError(expression.closingBracket(), error.value());
+            case Result.Error<GObject, String> error -> throw new RuntimeError(expression.closingBracketOrDot(), error.value());
         };
     }
 }

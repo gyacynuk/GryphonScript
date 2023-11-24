@@ -59,3 +59,4 @@ print(s)
 s['foo'] = 'bar'
 print(s)
 print(s['foo'])
+print(s.c.add(100, 1000))

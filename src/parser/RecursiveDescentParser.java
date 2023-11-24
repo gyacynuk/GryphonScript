@@ -148,7 +148,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
             if (lValueOrExpr instanceof Expression.Variable variable) {
                 return new Expression.Assignment(variable.name(), rValue);
             } else if (lValueOrExpr instanceof Expression.Index index) {
-                return new Expression.IndexAssignment(index.callee(), index.index(), rValue, index.closingBracket());
+                return new Expression.IndexAssignment(index.callee(), index.index(), rValue, index.closingBracketOrDot());
             }
 
             throw error(equals, "Invalid assignment target");
@@ -234,9 +234,10 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     private Expression parseInvocationExpression() {
         Expression expr = parsePrimaryExpression();
 
-        while (matchAny(LEFT_BRACKET, LEFT_SQUARE)) {
+        while (matchAny(LEFT_BRACKET, LEFT_SQUARE, DOT)) {
             if (matchAndConsumeAny(LEFT_BRACKET)) expr = finishInvocation(expr);
             else if (matchAndConsumeAny(LEFT_SQUARE)) expr = finishIndexing(expr);
+            else if (matchAndConsumeAny(DOT)) expr = finishDotIndexing(expr);
         }
 
         return expr;
@@ -258,6 +259,12 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         Expression index = parseExpressionStatement();
         Token paren = consume(RIGHT_SQUARE, "Expected ']' after index");
         return new Expression.Index(callee, paren, index);
+    }
+
+    private Expression finishDotIndexing(Expression callee) {
+        Token fieldName = consume(IDENTIFIER, "Expected identifier after '.'");
+        Expression variableIndex = new Expression.Literal(new GString(fieldName.lexeme()));
+        return new Expression.Index(callee, fieldName, variableIndex);
     }
 
     private Expression.ListLiteral finishListLiteral() {
