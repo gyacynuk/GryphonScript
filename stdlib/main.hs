@@ -56,7 +56,9 @@ listGenerator(100, 300) |> printListElements
 
 let s = { a: 'hello', b: 123, c: { add, a: 'I\'m nested!' } }
 print(s)
-s['foo'] = 'bar'
+s.foo = 'bar'
 print(s)
 print(s['foo'])
 print(s.c.add(100, 1000))
+
+print(simpleList ++ simpleList)

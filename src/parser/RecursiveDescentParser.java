@@ -211,7 +211,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         return generateLeftAssociativeBinaryGrammarRuleParser(
                 BinaryExpressionInitializer::initOperation,
                 this::parseFactorExpression,
-                MINUS, PLUS, CONCAT);
+                MINUS, PLUS, STRING_CONCAT, LIST_CONCAT);
     }
 
     private Expression parseFactorExpression() {

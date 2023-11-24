@@ -1,9 +1,6 @@
 package interpreter;
 
-import interpreter.datatypes.GBoolean;
-import interpreter.datatypes.GNil;
-import interpreter.datatypes.GNumeric;
-import interpreter.datatypes.GObject;
+import interpreter.datatypes.*;
 import interpreter.errors.RuntimeError;
 import model.Token;
 
@@ -43,6 +40,16 @@ public class InterpreterUtils {
                 return numericOperation.apply(numericLeft, numericRight);
             }
             throw new RuntimeError(operator, "Operands must be numbers");
+        };
+    }
+
+    public static Function<BiFunction<GList, GList, GObject>, GObject> listEnforcementBiFunctionDecorator(
+            Token operator, GObject operandLeft, GObject operandRight) {
+        return (BiFunction<GList, GList, GObject> listOperation) -> {
+            if (operandLeft instanceof GList listLeft && operandRight instanceof GList listRight) {
+                return listOperation.apply(listLeft, listRight);
+            }
+            throw new RuntimeError(operator, "Operands must be lists");
         };
     }
 }

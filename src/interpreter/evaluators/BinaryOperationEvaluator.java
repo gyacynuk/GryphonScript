@@ -2,10 +2,7 @@ package interpreter.evaluators;
 
 import interpreter.Interpreter;
 import interpreter.InterpreterUtils;
-import interpreter.datatypes.GBoolean;
-import interpreter.datatypes.GNumeric;
-import interpreter.datatypes.GObject;
-import interpreter.datatypes.GString;
+import interpreter.datatypes.*;
 import interpreter.errors.RuntimeError;
 import model.Expression;
 
@@ -19,6 +16,8 @@ public class BinaryOperationEvaluator implements ExpressionEvaluator<Expression.
 
         var numericEnforcementDecorator = InterpreterUtils
                 .numericEnforcementBiFunctionDecorator(expression.operator(), left, right);
+        var listEnforcementBiFunctionDecorator = InterpreterUtils
+                .listEnforcementBiFunctionDecorator(expression.operator(), left, right);
         return switch (expression.operator().type()) {
             case GREATER -> numericEnforcementDecorator.apply(GNumeric::greaterThan);
             case GREATER_EQUAL -> numericEnforcementDecorator.apply(GNumeric::greaterThanOrEqualTo);
@@ -28,13 +27,14 @@ public class BinaryOperationEvaluator implements ExpressionEvaluator<Expression.
             case MINUS -> numericEnforcementDecorator.apply(GNumeric::subtract);
             case SLASH -> numericEnforcementDecorator.apply(GNumeric::divide);
             case STAR -> numericEnforcementDecorator.apply(GNumeric::multiply);
-            case CONCAT -> {
+            case STRING_CONCAT -> {
                 if (left instanceof GString leftString) {
                     yield new GString(leftString.value() + right.stringify());
                 } else {
                     throw new RuntimeError(expression.operator(), "Concat operator '@' must have a string as the left-hand operand");
                 }
             }
+            case LIST_CONCAT -> listEnforcementBiFunctionDecorator.apply(GList::concat);
             case EQUAL_EQUAL -> new GBoolean(Objects.equals(left.value(), right.value()));
             case BANG_EQUAL -> new GBoolean(!Objects.equals(left.value(), right.value()));
             default -> throw new RuntimeError(expression.operator(), "Unknown binary operator");

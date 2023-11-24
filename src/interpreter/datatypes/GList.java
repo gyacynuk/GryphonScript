@@ -2,11 +2,23 @@ package interpreter.datatypes;
 
 import error.Result;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public record GList(List<GObject> value) implements GIndexable {
+
+    public GList add(GObject value) {
+        value().add(value);
+        return this;
+    }
+
+    public GList concat(GList other) {
+        List<GObject> concatenatedBackingList = new ArrayList<>(value);
+        concatenatedBackingList.addAll(other.value());
+        return new GList(concatenatedBackingList);
+    }
 
     @Override
     public Result<GObject, String> getAtIndex(GObject index) {
@@ -17,7 +29,7 @@ public record GList(List<GObject> value) implements GIndexable {
     public Result<GObject, String> setAtIndex(GObject index, GObject value) {
         return validateIndexThenApply(index, i -> {
             value().set(i, value);
-            return value;
+            return this;
         });
     }
 

@@ -35,9 +35,9 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                             new Expression.Binary.Operation(
                                     body,
                                     new Expression.Variable(interpolationToken),
-                                    new Token(TokenType.CONCAT, null, null, -1)),
+                                    new Token(TokenType.STRING_CONCAT, null, null, -1)),
                             new Expression.Literal(new GString(subStrings.get(i))),
-                            new Token(TokenType.CONCAT, null, null, -1));
+                            new Token(TokenType.STRING_CONCAT, null, null, -1));
                 }
 
                 yield new Expression.Lambda(holeTokenParams, body);

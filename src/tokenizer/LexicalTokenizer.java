@@ -6,14 +6,12 @@ import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import model.Token;
 import model.TokenType;
-import parser.Parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static model.TokenType.*;
 import static model.TokenType.INFIX;
@@ -150,9 +148,8 @@ public class LexicalTokenizer implements Tokenizer {
             case ']' -> createToken(RIGHT_SQUARE);
             case '.' -> createToken(DOT);
             case ',' -> createToken(COMMA);
-            case '+' -> createToken(PLUS);
             case '*' -> createToken(STAR);
-            case '@' -> createToken(CONCAT);
+            case '@' -> createToken(STRING_CONCAT);
             case ':' -> createToken(COLON);
             case ';' -> createToken(SEMICOLON);
             case '\\' -> createToken(BACK_SLASH);
@@ -163,6 +160,7 @@ public class LexicalTokenizer implements Tokenizer {
             case '<' -> createToken(conditionalMatchAndAdvance('=', LESS_EQUAL, LESS));
             case '>' -> createToken(conditionalMatchAndAdvance('=', GREATER_EQUAL, GREATER));
             case '-' -> createToken(conditionalMatchAndAdvance('>', ARROW, MINUS));
+            case '+' -> createToken(conditionalMatchAndAdvance('+', LIST_CONCAT, PLUS));
 
             // Match strictly 2 character tokens without valid prefixes
             // TODO: log error with no match (wrapper function for createTokenForFirstMatch() which logs when empty)
