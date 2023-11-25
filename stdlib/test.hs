@@ -54,3 +54,5 @@ let list = []
 add(list, 1) |> add(_, 2) |> add(_, 3)
 
 print(list)
+
+[true,false,true] |> filter(_, \(x) -> x) |> print

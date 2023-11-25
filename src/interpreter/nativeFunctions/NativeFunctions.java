@@ -1,13 +1,13 @@
 package interpreter.nativeFunctions;
 
 import interpreter.Interpreter;
+import interpreter.InterpreterUtils;
 import interpreter.datatypes.*;
 import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
 import lombok.NoArgsConstructor;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @NoArgsConstructor
 public class NativeFunctions {
@@ -19,7 +19,8 @@ public class NativeFunctions {
                 print(),
                 milliTime(),
                 size(),
-                add());
+                add(),
+                filter());
     }
 
     private NativeFunction print() {
@@ -104,5 +105,39 @@ public class NativeFunctions {
         };
 
         return new NativeFunction("add", new GLambda(lambda));
+    }
+
+    private NativeFunction filter() {
+        var lambda = new Invokable() {
+            @Override
+            public int arity() { return 2; }
+
+            @Override
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                if (!(arguments.get(0) instanceof GList list)) {
+                    throw new InvocationExecutionError("First argument to lambda 'filter' must be a list");
+                }
+                if (!(arguments.get(1) instanceof GLambda predicate)) {
+                    throw new InvocationExecutionError("Second argument to lambda 'filter' must be a lambda");
+                }
+
+                // Implement using a for-loop instead of using Stream APIs for performance improvement
+                List<GObject> filteredList = new ArrayList<>();
+                for (GObject element : list.value()) {
+                    if (InterpreterUtils.isTruthy(predicate.value().call(interpreter, Collections.singletonList(element)))) {
+                        filteredList.add(element);
+                    }
+                }
+
+                return new GList(filteredList);
+            }
+
+            @Override
+            public String toString() {
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
+            }
+        };
+
+        return new NativeFunction("filter", new GLambda(lambda));
     }
 }

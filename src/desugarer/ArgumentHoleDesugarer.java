@@ -10,6 +10,7 @@ import model.TokenType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Singleton
@@ -58,6 +59,17 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                         .map(this::desugarExpression)
                         .toList(),
                 expression.closingBracket());
+    }
+
+
+    @Override
+    protected Expression desugarUnary(Expression.Unary unary) {
+        if (Expression.HOLE.equals(unary.right())) {
+            return generateUnaryLambda(unary);
+        }
+        return new Expression.Unary(
+                unary.operator(),
+                desugarExpression(unary.right()));
     }
 
     @Override
@@ -126,6 +138,20 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
 
         // Generate body
         Expression.ListLiteral body = new Expression.ListLiteral(bodyElementExpressions, expression.closingBracket());
+
+        return new Expression.Lambda(holeTokenParams, body);
+    }
+
+    private Expression.Lambda generateUnaryLambda(Expression.Unary unary) {
+        // Right
+        Token rightTokenParam = generateParameterToken(0, unary.operator().line());
+        List<Token> holeTokenParams = Collections.singletonList(rightTokenParam);
+        Expression desugaredRight = new Expression.Variable(rightTokenParam);
+
+        // Generate body
+        Expression.Unary body = new Expression.Unary(
+                unary.operator(),
+                desugaredRight);
 
         return new Expression.Lambda(holeTokenParams, body);
     }
