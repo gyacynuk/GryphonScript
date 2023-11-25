@@ -1,46 +1,32 @@
-let startTime = milliTime()
+let name = 'Scout'
+let message = 'My dog\'s name is _ and he is _ years old'
+print(message(name, 15))
 
-let makeCounter = \() -> {
-    let count = 0
-    \() -> count = count + 1
-}
+print(type(message))
 
-let printWithCounterName = \(name, counter) -> print(name + ': '  + counter())
+let sum = \(a, b) -> a + b
+print( sum( 2, 3 ) )
 
-let counter1 = makeCounter()
-let counter2 = makeCounter()
+let subtract = \(a, b) -> a - b
+print( subtract( 10, 3 ) )
 
-printWithCounterName('Counter1', counter1)
-printWithCounterName('Counter1', counter1)
-printWithCounterName('Counter1', counter1)
-print('')
-printWithCounterName('Counter2', counter2)
-print('')
-printWithCounterName('Counter1', counter1)
-printWithCounterName('Counter1', counter1)
+let negative = subtract( 0, _ )
+print( negative( 5 ) )
 
-let endTime = milliTime()
+let negative2 = 0 - _
+print( negative2( 5 ) )
 
-print((endTime - startTime) / 1_000)
+let list = [ 1, 2, 3, 4, 5  ]
+print(list)
 
-let a = \(n) -> if (n == 0) 0 else n + a(n-1)
+let double = \(number) -> number * 2
+let isEven = \(number) -> number % 2 == 0
+let isTrue = \(boolean) -> boolean == true
 
-print(a(3))
+let result = size( filter( map(list, isEven), isTrue ) )
+let result2 = list
+    |> map(_, isEven)
+    |> filter(_, isTrue)
+    |> size
 
-let const = 1
-
-print(1 + if (const == 100) { 100 } else 50 + 2 / 2 * 4)
-
-if (true) const = const + 1
-
-if (!false) {
-    const = const + 10
-}
-
-const |> print
-
-const = 0
-while (const < 10) {
-    const = const + 1  |> print
-}
-const |> print
+print( result2 )

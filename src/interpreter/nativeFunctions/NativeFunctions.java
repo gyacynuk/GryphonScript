@@ -21,7 +21,8 @@ public class NativeFunctions {
                 type(),
                 size(),
                 add(),
-                filter());
+                filter(),
+                map());
     }
 
     private NativeFunction print() {
@@ -159,5 +160,37 @@ public class NativeFunctions {
         };
 
         return new NativeFunction("filter", new GLambda(lambda));
+    }
+
+    private NativeFunction map() {
+        var lambda = new Invokable() {
+            @Override
+            public int arity() { return 2; }
+
+            @Override
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                if (!(arguments.get(0) instanceof GList list)) {
+                    throw new InvocationExecutionError("First argument to lambda 'map' must be a list");
+                }
+                if (!(arguments.get(1) instanceof GLambda functor)) {
+                    throw new InvocationExecutionError("Second argument to lambda 'map' must be a lambda");
+                }
+
+                // Implement using a for-loop instead of using Stream APIs for performance improvement
+                List<GObject> mappedList = new ArrayList<>();
+                for (GObject element : list.value()) {
+                    mappedList.add(functor.value().call(interpreter, Collections.singletonList(element)));
+                }
+
+                return new GList(mappedList);
+            }
+
+            @Override
+            public String toString() {
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
+            }
+        };
+
+        return new NativeFunction("map", new GLambda(lambda));
     }
 }

@@ -17,6 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ArgumentHoleDesugarer extends BaseDesugarer {
     // TODO: Add generated TokenType as well for improved debugging
+    // TODO: make lambda grab the outermost expression (or group) for an argument hole, such that _ % 2 == 0 is a valid
+    //       expression, instead of evaluating to (\(a) -> a % 2) == 0 as it currently does
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
     @Override
