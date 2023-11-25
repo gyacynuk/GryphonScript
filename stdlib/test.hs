@@ -49,3 +49,8 @@ performance(\() -> fastFib(n), 5)
     |> print
 
 1 @ 2 @ 'three' |> print
+
+let list = []
+add(list, 1) |> add(_, 2) |> add(_, 3)
+
+print(list)

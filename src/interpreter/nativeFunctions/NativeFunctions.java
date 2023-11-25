@@ -2,7 +2,6 @@ package interpreter.nativeFunctions;
 
 import interpreter.Interpreter;
 import interpreter.datatypes.*;
-import interpreter.errors.RuntimeError;
 import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
 import lombok.NoArgsConstructor;
@@ -19,7 +18,8 @@ public class NativeFunctions {
         return Arrays.asList(
                 print(),
                 milliTime(),
-                size());
+                size(),
+                add());
     }
 
     private NativeFunction print() {
@@ -82,5 +82,27 @@ public class NativeFunctions {
         };
 
         return new NativeFunction("size", new GLambda(lambda));
+    }
+
+    private NativeFunction add() {
+        var lambda = new Invokable() {
+            @Override
+            public int arity() { return 2; }
+
+            @Override
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                if (!(arguments.get(0) instanceof GList list)) {
+                    throw new InvocationExecutionError("First argument to lambda 'add' must be a list");
+                }
+                return list.add(arguments.get(1));
+            }
+
+            @Override
+            public String toString() {
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
+            }
+        };
+
+        return new NativeFunction("add", new GLambda(lambda));
     }
 }
