@@ -18,6 +18,7 @@ public class NativeFunctions {
         return Arrays.asList(
                 print(),
                 milliTime(),
+                type(),
                 size(),
                 add(),
                 filter());
@@ -83,6 +84,25 @@ public class NativeFunctions {
         };
 
         return new NativeFunction("size", new GLambda(lambda));
+    }
+
+    private NativeFunction type() {
+        var lambda = new Invokable() {
+            @Override
+            public int arity() { return 1; }
+
+            @Override
+            public GObject call(Interpreter interpreter, List<GObject> arguments) {
+                return new GString(arguments.get(0).typeName());
+            }
+
+            @Override
+            public String toString() {
+                return String.format(NATIVE_LAMBDA_STRING_REPRESENTATION_TEMPLATE, arity());
+            }
+        };
+
+        return new NativeFunction("type", new GLambda(lambda));
     }
 
     private NativeFunction add() {

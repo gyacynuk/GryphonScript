@@ -6,6 +6,11 @@ import java.util.function.Function;
 
 public record GString(String value) implements GObject, GIndexable {
     @Override
+    public String typeName() {
+        return "string";
+    }
+
+    @Override
     public Result<GObject, String> getAtIndex(GObject index) {
         return validateIndexThenApply(index, i -> new GString(String.valueOf(value.charAt(i))));
     }

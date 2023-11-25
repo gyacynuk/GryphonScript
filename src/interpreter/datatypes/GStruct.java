@@ -13,6 +13,11 @@ public record GStruct(Map<GObject, GObject> value) implements GIndexable {
     }
 
     @Override
+    public String typeName() {
+        return "struct";
+    }
+
+    @Override
     public Result<GObject, String> getAtIndex(GObject index) {
         return Result.success(value().getOrDefault(index, GNil.INSTANCE));
     }

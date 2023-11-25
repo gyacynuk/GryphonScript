@@ -2,6 +2,11 @@ package interpreter.datatypes;
 
 public record GInteger(Integer value) implements GNumeric {
     @Override
+    public String typeName() {
+        return "integer";
+    }
+
+    @Override
     public Double toDouble() {
         return (double) value();
     }

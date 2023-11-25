@@ -8,6 +8,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public record GList(List<GObject> value) implements GIndexable {
+    @Override
+    public String typeName() {
+        return "list";
+    }
 
     public GList add(GObject value) {
         value().add(value);

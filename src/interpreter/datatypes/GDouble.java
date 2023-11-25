@@ -1,6 +1,10 @@
 package interpreter.datatypes;
 
 public record GDouble(Double value) implements GNumeric {
+    @Override
+    public String typeName() {
+        return "double";
+    }
 
     @Override
     public Double toDouble() {
