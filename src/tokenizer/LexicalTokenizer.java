@@ -152,6 +152,7 @@ public class LexicalTokenizer implements Tokenizer {
             case '.' -> createToken(DOT);
             case ',' -> createToken(COMMA);
             case '*' -> createToken(STAR);
+            case '%' -> createToken(MODULO);
             case '@' -> createToken(STRING_CONCAT);
             case ':' -> createToken(COLON);
             case ';' -> createToken(SEMICOLON);

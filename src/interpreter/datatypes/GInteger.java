@@ -42,4 +42,12 @@ public record GInteger(Integer value) implements GNumeric {
             case GDouble gDouble -> new GDouble(toDouble() / gDouble.value());
         };
     }
+
+    @Override
+    public GNumeric modulo(GNumeric other) {
+        return switch (other) {
+            case GInteger gInteger -> new GInteger(value() % gInteger.value());
+            case GDouble gDouble -> new GDouble(toDouble() % gDouble.value());
+        };
+    }
 }

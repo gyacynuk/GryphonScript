@@ -30,4 +30,9 @@ public record GDouble(Double value) implements GNumeric {
     public GNumeric divide(GNumeric other) {
         return new GDouble(value() / other.toDouble());
     }
+
+    @Override
+    public GNumeric modulo(GNumeric other) {
+        return new GDouble(value() / other.toDouble());
+    }
 }

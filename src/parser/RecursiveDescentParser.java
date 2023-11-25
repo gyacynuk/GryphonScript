@@ -285,7 +285,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         return generateLeftAssociativeBinaryGrammarRuleParser(
                 BinaryExpressionInitializer::initOperation,
                 this::parseUnaryExpression,
-                SLASH, STAR);
+                SLASH, STAR, MODULO);
     }
 
     private Expression parseUnaryExpression() {
