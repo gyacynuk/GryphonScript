@@ -17,6 +17,21 @@ import java.util.Optional;
 public class ArgumentHoleLambdaCombiner extends BaseDesugarer {
 
     @Override
+    protected Expression desugarGroup(Expression.Group group) {
+        Expression expression = desugarExpression(group.expression());
+        return getCombinableLambda(expression)
+                .map(expressionLambda -> {
+                    List<Token> lambdaArguments = expressionLambda.parameters();
+                    Expression lambdaBody = expressionLambda.body();
+
+                    Expression combinedBody = new Expression.Group(lambdaBody);
+
+                    return (Expression) new Expression.Lambda(lambdaArguments, combinedBody, true);
+                })
+                .orElse(group);
+    }
+
+    @Override
     protected Expression desugarUnary(Expression.Unary unary) {
         // Recurse on sub-expression first, which will bubble up any descendant generated lambdas to this level
         Expression right = this.desugarExpression(unary.right());
