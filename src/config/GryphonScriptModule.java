@@ -3,15 +3,13 @@ package config;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 import desugarer.Desugarer;
-import desugarer.ArgumentHoleDesugarer;
+import desugarer.argumenthole.ArgumentHoleDesugarer;
+import desugarer.argumenthole.ArgumentHoleLambdaGenerator;
 import desugarer.DesugaringOrchestrator;
 import desugarer.ExpansionDesugarer;
 import interpreter.Interpreter;
 import interpreter.TreeWalkInterpreter;
-import model.Expression;
 import parser.Parser;
 import parser.RecursiveDescentParser;
 import resolver.Resolver;
@@ -33,10 +31,10 @@ public class GryphonScriptModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Desugarer desugaringOrchestratorFactory() {
+    public Desugarer desugaringOrchestratorFactory(ArgumentHoleDesugarer argumentHoleDesugarer) {
         final List<Desugarer> orderedDesugarers = Arrays.asList(
                 new ExpansionDesugarer(),
-                new ArgumentHoleDesugarer());
+                argumentHoleDesugarer);
         return new DesugaringOrchestrator(orderedDesugarers);
     }
 }

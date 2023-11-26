@@ -43,7 +43,7 @@ public sealed interface Expression permits Expression.Assignment, Expression.Bin
     record Block(List<Expression> expressions) implements Expression {}
     record If(Expression condition, Expression thenBranch, Expression elseBranch) implements Expression {}
     record While(Expression condition, Expression body) implements Expression {}
-    record Lambda(List<Token> parameters, Expression body) implements Expression {}
+    record Lambda(List<Token> parameters, Expression body, boolean combinable) implements Expression {}
     record Invocation(Expression callee, Token closingBracket, List<Expression> arguments) implements Expression {}
     record Index(Expression callee, Token closingBracketOrDot, Expression index) implements Expression {}
 }

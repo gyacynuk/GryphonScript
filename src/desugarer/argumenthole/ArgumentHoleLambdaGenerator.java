@@ -1,6 +1,7 @@
-package desugarer;
+package desugarer.argumenthole;
 
 import com.google.inject.Singleton;
+import desugarer.BaseDesugarer;
 import interpreter.datatypes.GString;
 import lombok.NoArgsConstructor;
 import model.BinaryExpressionInitializer;
@@ -15,10 +16,15 @@ import java.util.List;
 
 @Singleton
 @NoArgsConstructor
-public class ArgumentHoleDesugarer extends BaseDesugarer {
+public class ArgumentHoleLambdaGenerator extends BaseDesugarer {
     // TODO: Add generated TokenType as well for improved debugging
     // TODO: make lambda grab the outermost expression (or group) for an argument hole, such that _ % 2 == 0 is a valid
     //       expression, instead of evaluating to (\(a) -> a % 2) == 0 as it currently does
+    //       Can do this in a second pass of a desugarer, which looks if an argument is a generated function, and if so
+    //       extracts the body out as the operand.
+    //       Need to make sure generated args are unique, so use a global static counter. Also can use a monad to extract
+    //       args from an expression/lambda when combining
+    private static int counter = 0;
     private static final String GENERATED_TOKEN_LEXEME_TEMPLATE = "gen-param-token-%d";
 
     @Override
@@ -33,7 +39,7 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                 List<Token> holeTokenParams = new ArrayList<>();
                 Expression body = new Expression.Literal(new GString(subStrings.get(0)));
                 for (int i = 1; i < subStrings.size(); i ++) {
-                    Token interpolationToken = generateParameterToken(i, -1);
+                    Token interpolationToken = generateParameterToken(-1);
                     holeTokenParams.add(interpolationToken);
                     body = new Expression.Binary.Operation(
                             new Expression.Binary.Operation(
@@ -44,7 +50,7 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                             new Token(TokenType.STRING_CONCAT, null, null, -1, false));
                 }
 
-                yield new Expression.Lambda(holeTokenParams, body);
+                yield new Expression.Lambda(holeTokenParams, body, true);
             }
             default -> expression;
         };
@@ -125,14 +131,13 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
 
     private Expression.Lambda generateListLambda(Expression.ListLiteral expression) {
         // Generate params
-        int runningCount = 0;
         List<Token> holeTokenParams = new ArrayList<>();
         List<Expression> bodyElementExpressions = new ArrayList<>();
         for (Expression elementExpression : expression.values()) {
             if (elementExpression != Expression.HOLE) {
                 bodyElementExpressions.add(desugarExpression(elementExpression));
             } else {
-                Token paramIdentifierToken = generateParameterToken(runningCount++, expression.closingBracket().line());
+                Token paramIdentifierToken = generateParameterToken(expression.closingBracket().line());
                 holeTokenParams.add(paramIdentifierToken);
                 bodyElementExpressions.add(new Expression.Variable(paramIdentifierToken));
             }
@@ -141,12 +146,12 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
         // Generate body
         Expression.ListLiteral body = new Expression.ListLiteral(bodyElementExpressions, expression.closingBracket());
 
-        return new Expression.Lambda(holeTokenParams, body);
+        return new Expression.Lambda(holeTokenParams, body, true);
     }
 
     private Expression.Lambda generateUnaryLambda(Expression.Unary unary) {
         // Right
-        Token rightTokenParam = generateParameterToken(0, unary.operator().line());
+        Token rightTokenParam = generateParameterToken(unary.operator().line());
         List<Token> holeTokenParams = Collections.singletonList(rightTokenParam);
         Expression desugaredRight = new Expression.Variable(rightTokenParam);
 
@@ -155,17 +160,16 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                 unary.operator(),
                 desugaredRight);
 
-        return new Expression.Lambda(holeTokenParams, body);
+        return new Expression.Lambda(holeTokenParams, body, true);
     }
 
     private Expression.Lambda generateBinaryLambda(Expression.Binary expression) {
-        int runningCount = 0;
         List<Token> holeTokenParams = new ArrayList<>();
 
         // Left
         Expression desugaredLeft;
         if (expression.left() == Expression.HOLE) {
-            Token leftTokenParam = generateParameterToken(runningCount++, expression.operator().line());
+            Token leftTokenParam = generateParameterToken(expression.operator().line());
             holeTokenParams.add(leftTokenParam);
             desugaredLeft = new Expression.Variable(leftTokenParam);
         } else {
@@ -175,7 +179,7 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
         // Right
         Expression desugaredRight;
         if (expression.right() == Expression.HOLE) {
-            Token rightTokenParam = generateParameterToken(runningCount++, expression.operator().line());
+            Token rightTokenParam = generateParameterToken(expression.operator().line());
             holeTokenParams.add(rightTokenParam);
             desugaredRight = new Expression.Variable(rightTokenParam);
         } else {
@@ -189,17 +193,16 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                         desugaredRight,
                         expression.operator()));
 
-        return new Expression.Lambda(holeTokenParams, body);
+        return new Expression.Lambda(holeTokenParams, body, true);
     }
 
     private Expression.Lambda generateInvocationLambda(Expression.Invocation expression) {
-        int runningCount = 0;
         List<Token> holeTokenParams = new ArrayList<>();
 
         // Callee
         Expression desugaredCallee;
         if (expression.callee() == Expression.HOLE) {
-            Token calleeTokenParam = generateParameterToken(runningCount++, expression.closingBracket().line());
+            Token calleeTokenParam = generateParameterToken(expression.closingBracket().line());
             holeTokenParams.add(calleeTokenParam);
             desugaredCallee = new Expression.Variable(calleeTokenParam);
         } else {
@@ -212,7 +215,7 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
             if (argumentExpression != Expression.HOLE) {
                 desugaredArguments.add(desugarExpression(argumentExpression));
             } else {
-                Token paramIdentifierToken = generateParameterToken(runningCount++, expression.closingBracket().line());
+                Token paramIdentifierToken = generateParameterToken(expression.closingBracket().line());
                 holeTokenParams.add(paramIdentifierToken);
                 desugaredArguments.add(new Expression.Variable(paramIdentifierToken));
             }
@@ -224,13 +227,14 @@ public class ArgumentHoleDesugarer extends BaseDesugarer {
                 expression.closingBracket(),
                 desugaredArguments);
 
-        return new Expression.Lambda(holeTokenParams, body);
+        // Invocation does not allow combinable lambdas to propagate upwards from it in the AST
+        return new Expression.Lambda(holeTokenParams, body, false);
     }
 
-    private Token generateParameterToken(int tokenIndex, int lineNumber) {
+    private Token generateParameterToken(int lineNumber) {
         return new Token(
                 TokenType.IDENTIFIER,
-                String.format(GENERATED_TOKEN_LEXEME_TEMPLATE, tokenIndex),
+                String.format(GENERATED_TOKEN_LEXEME_TEMPLATE, counter ++),
                 null,
                 lineNumber,
                 false);

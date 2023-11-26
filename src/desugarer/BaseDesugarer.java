@@ -102,8 +102,8 @@ public abstract class BaseDesugarer implements Desugarer {
     protected Expression desugarBinary(Expression.Binary binary) {
         return BinaryExpressionInitializer.getInitializerForExpression(binary).apply(
                 new BinaryExpressionInitializer.Args(
-                        binary.left(),
-                        binary.right(),
+                        desugarExpression(binary.left()),
+                        desugarExpression(binary.right()),
                         binary.operator()));
     }
 
@@ -134,7 +134,8 @@ public abstract class BaseDesugarer implements Desugarer {
     protected Expression desugarLambda(Expression.Lambda lambda) {
         return new Expression.Lambda(
                 lambda.parameters(),
-                desugarExpression(lambda.body()));
+                desugarExpression(lambda.body()),
+                lambda.combinable());
     }
 
     protected Expression desugarSugarExpression(SugarExpression sugarExpression) {

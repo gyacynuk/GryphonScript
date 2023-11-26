@@ -9,6 +9,7 @@ import model.Token;
 import parser.Parser;
 import resolver.Resolver;
 import tokenizer.Tokenizer;
+import util.DebugPrinter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,13 +77,13 @@ public class GryphonScript {
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
-        if (DEBUG) prettyPrint(expressions);
+        if (DEBUG) prettyPrint("Parsed", expressions);
 
         expressions = desugarer.desugarAll(expressions);
 
         // Stop if there was a syntax error.
         if (errorReporter.isInError()) return;
-        if (DEBUG) prettyPrint(expressions);
+        if (DEBUG) prettyPrint("Desugared", expressions);
 
         resolver.resolveProgram(interpreter, expressions);
 
@@ -92,8 +93,10 @@ public class GryphonScript {
         interpreter.executeProgram(expressions);
     }
 
-    void prettyPrint(List<?> list) {
-        System.out.println();
-        list.forEach(System.out::println);
+    private void prettyPrint(String name, List<Expression> list) {
+        System.out.printf("%s\n-----\n\n", name);
+        list.stream()
+                .map(DebugPrinter::toDebugString)
+                .forEach(System.out::println);
     }
 }

@@ -197,7 +197,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         consume(ARROW, "Expected '->' before lambda body");
         Expression body = parseBlockOrExpressionStatement();
 
-        return new Expression.Lambda(parameters, body);
+        return new Expression.Lambda(parameters, body, false);
     }
 
     private Expression parseInfixExpression() {
