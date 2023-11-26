@@ -17,6 +17,24 @@ import java.util.Optional;
 public class ArgumentHoleLambdaCombiner extends BaseDesugarer {
 
     @Override
+    protected Expression desugarUnary(Expression.Unary unary) {
+        // Recurse on sub-expression first, which will bubble up any descendant generated lambdas to this level
+        Expression right = this.desugarExpression(unary.right());
+        return getCombinableLambda(right)
+                .map(rightLambda -> {
+                    List<Token> rightArguments = rightLambda.parameters();
+                    Expression rightBody = rightLambda.body();
+
+                    Expression combinedBody = new Expression.Unary(
+                            unary.operator(),
+                            rightBody);
+
+                    return (Expression) new Expression.Lambda(rightArguments, combinedBody, true);
+                })
+                .orElse(unary);
+    }
+
+    @Override
     protected Expression desugarBinary(Expression.Binary binary) {
         // Recurse on sub-expressions first, which will bubble up any descendant generated lambdas to this level
         Expression left = this.desugarExpression(binary.left());
@@ -26,10 +44,19 @@ public class ArgumentHoleLambdaCombiner extends BaseDesugarer {
         var rightLambda = getCombinableLambda(right);
 
         if (leftLambda.isPresent() || rightLambda.isPresent()) {
-            List<Token> leftArguments = getCombinableArguments(leftLambda);
-            List<Token> rightArguments = getCombinableArguments(rightLambda);
-            Expression leftBody = getCombinableBody(leftLambda, left);
-            Expression rightBody = getCombinableBody(rightLambda, right);
+            List<Token> leftArguments = leftLambda
+                    .map(Expression.Lambda::parameters)
+                    .orElseGet(Collections::emptyList);
+            List<Token> rightArguments = rightLambda
+                    .map(Expression.Lambda::parameters)
+                    .orElseGet(Collections::emptyList);
+
+            Expression leftBody = leftLambda
+                    .map(Expression.Lambda::body)
+                    .orElse(left);
+            Expression rightBody = rightLambda
+                    .map(Expression.Lambda::body)
+                    .orElse(right);
 
             List<Token> combinedArguments = new ArrayList<>(leftArguments);
             combinedArguments.addAll(rightArguments);
@@ -44,18 +71,6 @@ public class ArgumentHoleLambdaCombiner extends BaseDesugarer {
         return BinaryExpressionInitializer
                 .getInitializerForExpression(binary)
                 .apply(new BinaryExpressionInitializer.Args(left, right, binary.operator()));
-    }
-
-    private List<Token> getCombinableArguments(Optional<Expression.Lambda> generatedLambda) {
-        return generatedLambda
-                .map(Expression.Lambda::parameters)
-                .orElseGet(Collections::emptyList);
-    }
-
-    private Expression getCombinableBody(Optional<Expression.Lambda> generatedLambda, Expression fallbackExpression) {
-        return generatedLambda
-                .map(Expression.Lambda::body)
-                .orElse(fallbackExpression);
     }
 
     private Optional<Expression.Lambda> getCombinableLambda(Expression expression) {

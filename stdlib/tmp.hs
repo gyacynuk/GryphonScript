@@ -1,6 +1,6 @@
 let name = 'Scout'
 let message = 'My dog\'s name is _ and he is _ years old'
-print(message(name, 15))
+print( message( name, 15 ))
 
 let subtract = \(a, b) -> a - b
 print( 'subtract result: ' @ subtract( 10, 3 ) )
@@ -13,9 +13,9 @@ print( 'negative2 result: ' @ negative2( 5 ) )
 
 let list = [ 1, 2, 3, 4, 5  ]
 let isEven = _ % 2 == 0
-let isTrue = _ == true
+let isTrue = !!_
 
-let result = size( filter( map(list, isEven), isTrue ) )
+let result = size( filter( map( list, isEven ), isTrue ) )
 print( 'composed list lambda result: ' @ result )
 
 let pipedResult = list
