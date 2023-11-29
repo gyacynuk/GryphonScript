@@ -5,6 +5,14 @@ import java.util.List;
 public sealed interface SugarExpression extends Expression {
     Token getErrorReportingToken();
 
+    sealed interface DestructureLambdaParam permits Token, Destructure {}
+    record DestructureLambda(List<DestructureLambdaParam> parameters, Expression body, Token arrow) implements SugarExpression {
+        @Override
+        public Token getErrorReportingToken() {
+            return arrow;
+        }
+    }
+
     record ArrayDestructureField(Token nullableVariable, List<Expression> context, Destructure nullableNestedDestructure) implements SugarExpression {
         @Override
         public Token getErrorReportingToken() {
@@ -21,7 +29,7 @@ public sealed interface SugarExpression extends Expression {
         }
     }
 
-    sealed interface Destructure extends SugarExpression {
+    sealed interface Destructure extends SugarExpression, DestructureLambdaParam {
         List<? extends SugarExpression> fields();
         record ArrayDestructure(List<ArrayDestructureField> fields, Token closingBracket) implements Destructure {
             @Override

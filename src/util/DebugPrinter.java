@@ -69,7 +69,7 @@ public class DebugPrinter {
                 case Expression.Index index -> String.format("Index: %s%s",
                         newline("callee", toDebugString(index.callee())),
                         newline("index", toDebugString(index.index())));
-                case SugarExpression ignored -> "Sugar";
+                case SugarExpression sugarExpression -> sugarExpression.toString();
                 case null -> "null";
             };
         tabMultiplier --;

@@ -19,15 +19,27 @@ public class ExpansionDesugarer extends BaseDesugarer {
     public List<Expression> desugarAll(List<Expression> expressions) {
         return expressions.stream()
                 // Expand top-level expressions
-                .flatMap(expression -> desugarAndExpandExpression(expression).stream())
+                .flatMap(expression -> desugarAndExpandTopLevelExpression(expression).stream())
                 // Recurse to expand nested blocks
                 .map(super::desugarExpression)
                 .toList();
     }
 
-    private List<Expression> desugarAndExpandExpression(Expression expression) {
+    @Override
+    protected Expression desugarSugarExpression(SugarExpression sugarExpression) {
+        if (sugarExpression instanceof SugarExpression.DestructureLambda destructureLambda) {
+            return desugarAndExpandLambda(destructureLambda);
+        } else {
+            throw new RuntimeError(
+                    sugarExpression.getErrorReportingToken(),
+                    "An unrecognized nested sugar expression was encountered in the ExpansionDesugarer, which caused it to panic. This is a bug in the GryphonScript language implementation.");
+        }
+    }
+
+    private List<Expression> desugarAndExpandTopLevelExpression(Expression expression) {
         return switch (expression) {
             case SugarExpression.DestructureDeclaration destructureDeclaration -> desugarAndExpandDestructure(destructureDeclaration);
+            case SugarExpression.DestructureLambda destructureLambda -> Collections.singletonList(desugarAndExpandLambda(destructureLambda));
             case SugarExpression sugarExpression -> throw new RuntimeError(sugarExpression.getErrorReportingToken(), "Non-top-level SugarExpression should not be expanded. This is a bug in the GyrphonScript language implementation.");
             default -> Collections.singletonList(expression);
         };
@@ -38,7 +50,7 @@ public class ExpansionDesugarer extends BaseDesugarer {
 
         // Declare the list/struct to be destructured using a hidden variable name to ensure it does not pollute the
         // developer's environment
-        Token targetVariableToken = generateUniqueHiddenToken(destructureDeclaration.getErrorReportingToken());
+        Token targetVariableToken = generateUniqueHiddenToken(destructureDeclaration);
         expandedExpressions.add(new Expression.Declaration(targetVariableToken, destructureDeclaration.initializer()));
 
         // Create declaration expressions for each destructured field
@@ -48,6 +60,37 @@ public class ExpansionDesugarer extends BaseDesugarer {
                         targetVariableToken));
 
         return expandedExpressions;
+    }
+
+    private Expression desugarAndExpandLambda(SugarExpression.DestructureLambda destructureLambda) {
+        List<Token> lambdaParameters = new ArrayList<>();
+        List<Expression> expandedExpressions = new ArrayList<>();
+
+        for (SugarExpression.DestructureLambdaParam sugarParam : destructureLambda.parameters()) {
+            switch (sugarParam) {
+                case Token token -> lambdaParameters.add(token);
+                case SugarExpression.Destructure destructure -> {
+                    Token targetParameterToken = generateUniqueHiddenToken(destructureLambda);
+                    lambdaParameters.add(targetParameterToken);
+                    expandedExpressions.addAll(
+                            generateLeafDeclarations(
+                                    destructure.fields(),
+                                    targetParameterToken));
+                }
+            }
+        }
+
+        Expression desugaredBody = desugarExpression(destructureLambda.body());
+        if (desugaredBody instanceof Expression.Block blockBody) {
+            expandedExpressions.addAll(blockBody.expressions());
+        } else {
+            expandedExpressions.add(destructureLambda.body());
+        }
+
+        return new Expression.Lambda(
+                lambdaParameters,
+                new Expression.Block(expandedExpressions),
+                false);
     }
 
     private List<Expression.Declaration> generateLeafDeclarations(List<? extends SugarExpression> fields, Token targetVariableToken) {
@@ -98,8 +141,9 @@ public class ExpansionDesugarer extends BaseDesugarer {
         return callee;
     }
 
-    private Token generateUniqueHiddenToken(Token associatedToken) {
+    private Token generateUniqueHiddenToken(SugarExpression sugarExpression) {
+        Token associatedSourceToken = sugarExpression.getErrorReportingToken();
         String lexeme = HIDDEN_DESTRUCTURE_VARIABLE_PREFIX + counter++;
-        return new Token(IDENTIFIER, lexeme, null, associatedToken.line(), false);
+        return new Token(IDENTIFIER, lexeme, null, associatedSourceToken.line(), false);
     }
 }

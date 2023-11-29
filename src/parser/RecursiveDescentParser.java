@@ -183,18 +183,30 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     private Expression parseLambdaExpression() {
         consume(LEFT_BRACKET, "Expected '(' after '\\' during lambda declaration");
 
+        // Since we do not know if sugared parameters will be present when we start parsing, eagerly initialize and
+        // maintain 2 parameter lists (one pure tokens, one mix of syntactic sugar and tokens)
         List<Token> parameters = new ArrayList<>();
+        List<SugarExpression.DestructureLambdaParam> sugarParameters = new ArrayList<>();
         if (!check(RIGHT_BRACKET)) {
             do {
-                parameters.add(consume(IDENTIFIER, "Expected parameter name"));
+                if (matchAny(LEFT_SQUARE, LEFT_CURLY)) sugarParameters.add(parseDestructure(Collections.emptyList()));
+                else {
+                    Token tokenParam = consume(IDENTIFIER, "Expected parameter name");
+                    parameters.add(tokenParam);
+                    sugarParameters.add(tokenParam);
+                }
             } while (matchAndConsumeAny(COMMA));
         }
 
         consume(RIGHT_BRACKET, "Expected ')' after lambda parameters");
-        consume(ARROW, "Expected '->' before lambda body");
+        Token arrow = consume(ARROW, "Expected '->' before lambda body");
         Expression body = parseBlockOrExpressionStatement();
 
-        return new Expression.Lambda(parameters, body, false);
+        if (sugarParameters.size() == parameters.size()) {
+            return new Expression.Lambda(parameters, body, false);
+        } else {
+            return new SugarExpression.DestructureLambda(sugarParameters, body, arrow);
+        }
     }
 
     private Expression parseInfixExpression() {

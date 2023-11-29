@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class GryphonScript {
-    private static final boolean DEBUG = false;
+    public static final boolean DEBUG = false;
     private static final String REPL_PREFIX = "> ";
 
     private final ErrorReporter errorReporter;
@@ -93,7 +93,7 @@ public class GryphonScript {
         interpreter.executeProgram(expressions);
     }
 
-    private void prettyPrint(String name, List<Expression> list) {
+    public static void prettyPrint(String name, List<Expression> list) {
         System.out.printf("%s\n-----\n\n", name);
         list.stream()
                 .map(DebugPrinter::toDebugString)

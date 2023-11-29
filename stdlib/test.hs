@@ -1,10 +1,5 @@
-let rec = \(n) ->
-    if (n <= 0) {
-        print(0)
-        0
-    } else {
-        rec(n-1)
-        print(n)
-    }
+let p = \([a, b],  c) -> print((a+b)*5)
 
-rec(10000)
+p([1, 2], 5)
+
+(\([a, b]) -> print(a+b))([4, 5])
