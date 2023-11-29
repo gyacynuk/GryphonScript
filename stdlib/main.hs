@@ -71,3 +71,16 @@ let { b, c: { a } } = s
 print(b)
 print(a)
 
+let fastFib = \(n) -> {
+    let mem = { pp:0, p:1 }
+    let aux = \(n) -> {
+        if (n > 2) aux(n-1)
+        let { pp, p } = mem
+        let cur = pp + p
+        (mem = { pp: p, p: cur }).p
+    }
+    n |> aux
+}
+
+print('5:_, 7:_'(fastFib(5), fastFib(7)))
+

@@ -91,10 +91,10 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
 
             if (matchAny(IDENTIFIER)) {
                 Token fieldName = consume(IDENTIFIER, "Expected identifier as field name in array destructure");
-                fields.add(new SugarExpression.ArrayDestructureField.FieldDeclaration(fieldName, newContext, null));
+                fields.add(new SugarExpression.ArrayDestructureField(fieldName, newContext, null));
             }
             else {
-                fields.add(new SugarExpression.ArrayDestructureField.FieldDeclaration(null, newContext, parseDestructure(newContext)));
+                fields.add(new SugarExpression.ArrayDestructureField(null, newContext, parseDestructure(newContext)));
             }
         } while (matchAndConsumeAny(COMMA));
 
@@ -121,7 +121,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
                 nullableFieldValue = parseDestructure(newContext);
             }
 
-            fields.add(new SugarExpression.StructDestructureField.FieldDeclaration(fieldName, newContext, nullableFieldValue));
+            fields.add(new SugarExpression.StructDestructureField(fieldName, newContext, nullableFieldValue));
         } while (matchAndConsumeAny(COMMA));
 
         Token closingBracket = consume(RIGHT_CURLY, "Expected struct destructuring to end with '}'");
@@ -186,9 +186,6 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
         List<Token> parameters = new ArrayList<>();
         if (!check(RIGHT_BRACKET)) {
             do {
-                if (parameters.size() >= 255) {
-                    error(peek(), "Lambda cannot have more than 255 parameters");
-                }
                 parameters.add(consume(IDENTIFIER, "Expected parameter name"));
             } while (matchAndConsumeAny(COMMA));
         }

@@ -25,12 +25,6 @@ public class ExpansionDesugarer extends BaseDesugarer {
                 .toList();
     }
 
-    @Override
-    protected Expression desugarBlock(Expression.Block block) {
-        return new Expression.Block(
-                desugarAll(block.expressions()));
-    }
-
     private List<Expression> desugarAndExpandExpression(Expression expression) {
         return switch (expression) {
             case SugarExpression.DestructureDeclaration destructureDeclaration -> desugarAndExpandDestructure(destructureDeclaration);
@@ -59,7 +53,7 @@ public class ExpansionDesugarer extends BaseDesugarer {
     private List<Expression.Declaration> generateLeafDeclarations(List<? extends SugarExpression> fields, Token targetVariableToken) {
         List<Expression.Declaration> declarations = new ArrayList<>();
         fields.forEach(field -> {
-            if (field instanceof SugarExpression.ArrayDestructureField.FieldDeclaration arrayDestructureField) {
+            if (field instanceof SugarExpression.ArrayDestructureField arrayDestructureField) {
                 // Base case
                 if (arrayDestructureField.nullableVariable() != null) {
                     declarations.add(new Expression.Declaration(
@@ -73,7 +67,7 @@ public class ExpansionDesugarer extends BaseDesugarer {
                             targetVariableToken));
                 }
             }
-            else if (field instanceof SugarExpression.StructDestructureField.FieldDeclaration structDestructureField) {
+            else if (field instanceof SugarExpression.StructDestructureField structDestructureField) {
                 // Base case
                 if (structDestructureField.nullableNestedDestructure() == null) {
                     declarations.add(new Expression.Declaration(
