@@ -8,7 +8,7 @@ import interpreter.errors.RuntimeError;
 import interpreter.evaluators.*;
 import interpreter.lambda.InvocationExecutionError;
 import interpreter.lambda.Invokable;
-import interpreter.nativeFunctions.NativeFunctions;
+import interpreter.standardlibrary.LibraryStructFactory;
 import interpreter.runtime.Environment;
 import lombok.RequiredArgsConstructor;
 import model.Expression;
@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor(onConstructor_ = { @Inject})
 public class TreeWalkInterpreter implements Interpreter {
     private final ErrorReporter errorReporter;
-    private final NativeFunctions nativeFunctions;
+    private final LibraryStructFactory libraryStructFactory;
     private final Map<Expression, Integer> stackDepthMap = new HashMap<>();
     private final Environment globalEnvironment = Environment.createGlobalEnvironment();
     private Environment currentEnvironment = globalEnvironment;
@@ -51,10 +51,10 @@ public class TreeWalkInterpreter implements Interpreter {
 
     @Override
     public GObject executeProgram(List<Expression> expressions) {
-        // Populate global environment with native functions
-        nativeFunctions.getNativeFunctions().forEach(nativeFunction -> globalEnvironment.define(
-                nativeFunction.name(),
-                nativeFunction.lambda()));
+        // Add standard library to the global scope
+        globalEnvironment.define(
+                libraryStructFactory.getStandardLibraryName(),
+                libraryStructFactory.buildStandardLibraryStruct());
 
         GObject finalExpressionResult = null;
         try {

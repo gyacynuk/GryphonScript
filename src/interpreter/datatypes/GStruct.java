@@ -8,13 +8,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public record GStruct(Map<GObject, GObject> value) implements GIndexable {
+    public static final String TYPE_NAME = "struct";
+
     public static GStruct initEmptyStruct() {
         return new GStruct(new LinkedHashMap<>());
     }
 
     @Override
     public String typeName() {
-        return "struct";
+        return TYPE_NAME;
     }
 
     @Override

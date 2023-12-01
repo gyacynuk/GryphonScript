@@ -5,9 +5,11 @@ import error.Result;
 import java.util.function.Function;
 
 public record GString(String value) implements GObject, GIndexable {
+    public static final String TYPE_NAME = "string";
+
     @Override
     public String typeName() {
-        return "string";
+        return TYPE_NAME;
     }
 
     @Override

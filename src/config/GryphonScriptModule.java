@@ -10,6 +10,13 @@ import desugarer.DesugaringOrchestrator;
 import desugarer.ExpansionDesugarer;
 import interpreter.Interpreter;
 import interpreter.TreeWalkInterpreter;
+import interpreter.standardlibrary.LibraryStructFactory;
+import interpreter.standardlibrary.libraries.FileLibrary;
+import interpreter.standardlibrary.libraries.ListLibrary;
+import interpreter.standardlibrary.libraries.RootLibrary;
+import interpreter.standardlibrary.libraries.StringLibrary;
+import interpreter.standardlibrary.libraries.types.StructLibrary;
+import interpreter.standardlibrary.libraries.types.TypeLibrary;
 import parser.Parser;
 import parser.RecursiveDescentParser;
 import resolver.Resolver;
@@ -31,10 +38,30 @@ public class GryphonScriptModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Desugarer desugaringOrchestratorFactory(ArgumentHoleDesugarer argumentHoleDesugarer) {
+    public Desugarer desugaringOrchestratorFactory(
+            ExpansionDesugarer expansionDesugarer,
+            ArgumentHoleDesugarer argumentHoleDesugarer) {
         final List<Desugarer> orderedDesugarers = Arrays.asList(
-                new ExpansionDesugarer(),
+                expansionDesugarer,
                 argumentHoleDesugarer);
         return new DesugaringOrchestrator(orderedDesugarers);
+    }
+
+    @Provides
+    @Singleton
+    public LibraryStructFactory libraryStructFactory(
+            StructLibrary structLibrary,
+            TypeLibrary typeLibrary,
+            FileLibrary fileLibrary,
+            ListLibrary listLibrary,
+            RootLibrary rootLibrary,
+            StringLibrary stringLibrary) {
+        return new LibraryStructFactory(Arrays.asList(
+                structLibrary,
+                typeLibrary,
+                fileLibrary,
+                listLibrary,
+                rootLibrary,
+                stringLibrary));
     }
 }

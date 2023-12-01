@@ -1,9 +1,11 @@
 package interpreter.datatypes;
 
 public record GInteger(Integer value) implements GNumeric {
+    public static final String TYPE_NAME = "integer";
+
     @Override
     public String typeName() {
-        return "integer";
+        return TYPE_NAME;
     }
 
     @Override

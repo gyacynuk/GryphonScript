@@ -1,6 +1,8 @@
 package desugarer;
 
+import com.google.inject.Singleton;
 import interpreter.errors.RuntimeError;
+import lombok.NoArgsConstructor;
 import model.Expression;
 import model.SugarExpression;
 import model.Token;
@@ -11,6 +13,8 @@ import java.util.List;
 
 import static model.TokenType.IDENTIFIER;
 
+@Singleton
+@NoArgsConstructor
 public class ExpansionDesugarer extends BaseDesugarer {
     private static int counter = 0;
     private static final String HIDDEN_DESTRUCTURE_VARIABLE_PREFIX = "hidden-destruct-";
