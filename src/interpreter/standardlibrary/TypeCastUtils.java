@@ -14,6 +14,22 @@ public class TypeCastUtils {
         return integer;
     }
 
+    public static GDouble toGDouble(List<GObject> arguments, int index, String lambdaName) {
+        if (!(arguments.get(index) instanceof GDouble gDouble)) {
+            String errorMessage = generateErrorMessageForWrongLambdaArgumentType(index, lambdaName, GDouble.TYPE_NAME);
+            throw new InvocationExecutionError(errorMessage);
+        }
+        return gDouble;
+    }
+
+    public static GNumeric toGNumeric(List<GObject> arguments, int index, String lambdaName) {
+        if (!(arguments.get(index) instanceof GNumeric numeric)) {
+            String errorMessage = generateErrorMessageForWrongLambdaArgumentType(index, lambdaName, "Numeric");
+            throw new InvocationExecutionError(errorMessage);
+        }
+        return numeric;
+    }
+
     public static GString toGString(List<GObject> arguments, int index, String lambdaName) {
         if (!(arguments.get(index) instanceof GString gString)) {
             String errorMessage = generateErrorMessageForWrongLambdaArgumentType(index, lambdaName, GString.TYPE_NAME);

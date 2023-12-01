@@ -1,10 +1,7 @@
 package interpreter.standardlibrary.libraries;
 
 import com.google.inject.Singleton;
-import interpreter.datatypes.GInteger;
-import interpreter.datatypes.GList;
-import interpreter.datatypes.GObject;
-import interpreter.datatypes.GString;
+import interpreter.datatypes.*;
 import interpreter.standardlibrary.Library;
 import interpreter.standardlibrary.LibraryFunction;
 import interpreter.standardlibrary.TypeCastUtils;
@@ -25,7 +22,53 @@ public class StringLibrary implements Library {
     @Override
     public List<LibraryFunction> getFunctions() {
         return Arrays.asList(
-                substring(), trim(), split(), replaceFirst(), replaceAll());
+                stringify(), parseInteger(), parseDouble(), parseBoolean(),
+                substring(), stripWhitespace(), split(), replaceFirst(), replaceAll());
+    }
+
+    private LibraryFunction stringify() {
+        final String lambdaName = "stringify";
+        final int arity = 1;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> new GString(args.get(0).stringify()));
+    }
+
+    private LibraryFunction parseInteger() {
+        final String lambdaName = "parseInteger";
+        final int arity = 1;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
+            GString gString = TypeCastUtils.toGString(args, 0, lambdaName);
+            try {
+                return new GInteger(Integer.parseInt(gString.value()));
+            } catch (Exception e) {
+                return GNil.INSTANCE;
+            }
+        });
+    }
+
+    private LibraryFunction parseDouble() {
+        final String lambdaName = "parseDouble";
+        final int arity = 1;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
+            GString gString = TypeCastUtils.toGString(args, 0, lambdaName);
+            try {
+                return new GDouble(Double.parseDouble(gString.value()));
+            } catch (Exception e) {
+                return GNil.INSTANCE;
+            }
+        });
+    }
+
+    private LibraryFunction parseBoolean() {
+        final String lambdaName = "parseBoolean";
+        final int arity = 1;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
+            GString gString = TypeCastUtils.toGString(args, 0, lambdaName);
+            try {
+                return new GBoolean(Boolean.parseBoolean(gString.value()));
+            } catch (Exception e) {
+                return GNil.INSTANCE;
+            }
+        });
     }
 
     private LibraryFunction substring() {
@@ -41,13 +84,13 @@ public class StringLibrary implements Library {
         });
     }
 
-    private LibraryFunction trim() {
-        final String lambdaName = "trim";
+    private LibraryFunction stripWhitespace() {
+        final String lambdaName = "stripWhitespace";
         final int arity = 1;
         return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
             GString gString = TypeCastUtils.toGString(args, 0, lambdaName);
-            String trimmedString = gString.value().trim();
-            return new GString(trimmedString);
+            String strippedString = gString.value().strip();
+            return new GString(strippedString);
         });
     }
 
