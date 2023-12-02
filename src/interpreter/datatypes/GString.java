@@ -13,6 +13,15 @@ public record GString(String value) implements GObject, GIndexable {
     }
 
     @Override
+    public GBoolean hasIndex(GObject index) {
+        Result<GObject, String> validationResult =  validateIndexThenApply(index, ignored -> new GBoolean(true));
+        return switch (validationResult) {
+            case Result.Success<GObject, String> ignored -> new GBoolean(true);
+            case Result.Error<GObject, String> ignored -> new GBoolean(false);
+        };
+    }
+
+    @Override
     public Result<GObject, String> getAtIndex(GObject index) {
         return validateIndexThenApply(index, i -> new GString(String.valueOf(value.charAt(i))));
     }

@@ -2,15 +2,14 @@ package interpreter.standardlibrary;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import error.Result;
 import interpreter.Interpreter;
-import interpreter.datatypes.GLambda;
-import interpreter.datatypes.GObject;
-import interpreter.datatypes.GString;
-import interpreter.datatypes.GStruct;
+import interpreter.datatypes.*;
 import interpreter.lambda.Invokable;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class LibraryStructFactory {
@@ -34,9 +33,18 @@ public class LibraryStructFactory {
             GObject lambdaFunction = libraryFunctionToGLambda(libraryFunction);
             library.setAtIndex(lambdaName, lambdaFunction);
         } else {
-            GStruct subLibrary = GStruct.initEmptyStruct();
             GObject subLibraryName = new GString(path.get(0));
-            library.setAtIndex(subLibraryName, subLibrary);
+            Result<GObject, String> subLibraryLookupResult = library.getAtIndex(subLibraryName);
+
+            GStruct subLibrary;
+            if (subLibraryLookupResult instanceof Result.Success<GObject, String> successfulLookup
+                    && !Objects.equals(successfulLookup.value(), GNil.INSTANCE)) {
+                subLibrary = (GStruct) successfulLookup.value();
+            } else {
+                subLibrary = GStruct.initEmptyStruct();
+                library.setAtIndex(subLibraryName, subLibrary);
+            }
+
             addLibraryLambda(subLibrary, libraryFunction, path.subList(1, path.size()));
         }
     }

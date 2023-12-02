@@ -20,6 +20,12 @@ public record GStruct(Map<GObject, GObject> value) implements GIndexable {
     }
 
     @Override
+    public GBoolean hasIndex(GObject index) {
+        if (value.containsKey(index)) return new GBoolean(true);
+        return new GBoolean(false);
+    }
+
+    @Override
     public Result<GObject, String> getAtIndex(GObject index) {
         return Result.success(value().getOrDefault(index, GNil.INSTANCE));
     }

@@ -22,8 +22,17 @@ public class StringLibrary implements Library {
     @Override
     public List<LibraryFunction> getFunctions() {
         return Arrays.asList(
-                stringify(), parseInteger(), parseDouble(), parseBoolean(),
+                length(), stringify(), parseInteger(), parseDouble(), parseBoolean(),
                 substring(), stripWhitespace(), split(), replaceFirst(), replaceAll());
+    }
+
+    private LibraryFunction length() {
+        final String lambdaName = "length";
+        final int arity = 1;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
+            GString gString = TypeCastUtils.toGString(args, 0, lambdaName);
+            return new GInteger(gString.getSize());
+        });
     }
 
     private LibraryFunction stringify() {

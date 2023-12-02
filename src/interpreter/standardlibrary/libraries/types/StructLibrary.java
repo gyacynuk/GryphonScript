@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Singleton
@@ -30,7 +29,8 @@ public class StructLibrary implements Library {
     @Override
     public List<LibraryFunction> getFunctions() {
         return Arrays.asList(
-                keys(), values(), entries());
+                keys(), values(), entries(),
+                hasKey());
     }
 
     private LibraryFunction keys() {
@@ -61,6 +61,16 @@ public class StructLibrary implements Library {
                             .stream()
                             .map(e -> (GObject) new GList(new ArrayList<>(Arrays.asList(e.getKey(), e.getValue()))))
                             .toList());
+        });
+    }
+
+    private LibraryFunction hasKey() {
+        final String lambdaName = "hasKey";
+        final int arity = 2;
+        return new LibraryFunction(lambdaName, arity, (interpreter, args) -> {
+            GStruct struct = TypeCastUtils.toGStruct(args, 0, lambdaName);
+            GObject index = args.get(1);
+            return struct.hasIndex(index);
         });
     }
 }
