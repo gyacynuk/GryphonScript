@@ -37,4 +37,9 @@ public record GDouble(Double value) implements GNumeric {
     public GNumeric modulo(GNumeric other) {
         return new GDouble(value() / other.toDouble());
     }
+
+    @Override
+    public GNumeric power(GNumeric other) {
+        return new GDouble(Math.pow(value(), other.toDouble()));
+    }
 }

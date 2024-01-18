@@ -7,6 +7,7 @@ public sealed interface GNumeric extends GObject permits GInteger, GDouble {
     GNumeric multiply(GNumeric other);
     GNumeric divide(GNumeric other);
     GNumeric modulo(GNumeric other);
+    GNumeric power(GNumeric other);
     default GBoolean greaterThan(GNumeric other) {
         return new GBoolean(toDouble() > other.toDouble());
     }

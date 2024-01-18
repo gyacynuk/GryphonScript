@@ -151,7 +151,6 @@ public class LexicalTokenizer implements Tokenizer {
             case ']' -> createToken(RIGHT_SQUARE);
             case '.' -> createToken(DOT);
             case ',' -> createToken(COMMA);
-            case '*' -> createToken(STAR);
             case '%' -> createToken(MODULO);
             case '@' -> createToken(STRING_CONCAT);
             case ':' -> createToken(COLON);
@@ -165,6 +164,7 @@ public class LexicalTokenizer implements Tokenizer {
             case '>' -> createToken(conditionalMatchAndAdvance('=', GREATER_EQUAL, GREATER));
             case '-' -> createToken(conditionalMatchAndAdvance('>', ARROW, MINUS));
             case '+' -> createToken(conditionalMatchAndAdvance('+', LIST_CONCAT, PLUS));
+            case '*' -> createToken(conditionalMatchAndAdvance('*', POWER, STAR));
 
             // Match strictly 2 character tokens without valid prefixes
             // TODO: log error with no match (wrapper function for createTokenForFirstMatch() which logs when empty)

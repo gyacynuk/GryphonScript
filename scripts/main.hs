@@ -1,3 +1,6 @@
+let { print } = StdLib
+let { size } = StdLib.List
+
 let add = \(a, b) -> a + b
 let add5 = add(_, 5)
 let doSomething = _(1, 2)

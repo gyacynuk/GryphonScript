@@ -77,7 +77,7 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     }
 
     private SugarExpression.Destructure.ArrayDestructure parseArrayDestructure(List<Expression> context) {
-        Token openingBracket = consume(LEFT_SQUARE, "Expected array destructuring to begin with '['");
+        consume(LEFT_SQUARE, "Expected array destructuring to begin with '['");
         if (check(RIGHT_SQUARE)) {
             throw error(peek(), "Empty array destructure declaration is not allowed");
         }
@@ -293,8 +293,15 @@ public class RecursiveDescentParser extends BaseParser implements Parser {
     private Expression parseFactorExpression() {
         return generateLeftAssociativeBinaryGrammarRuleParser(
                 BinaryExpressionInitializer::initOperation,
-                this::parseUnaryExpression,
+                this::parsePowerExpression,
                 SLASH, STAR, MODULO);
+    }
+
+    private Expression parsePowerExpression() {
+        return generateLeftAssociativeBinaryGrammarRuleParser(
+                BinaryExpressionInitializer::initOperation,
+                this::parseUnaryExpression,
+                POWER);
     }
 
     private Expression parseUnaryExpression() {
