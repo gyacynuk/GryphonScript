@@ -37,7 +37,7 @@ stack size to 100MB should be more than sufficient for the majority of scripts, 
 
 ## A Quick Language Tour by Example
 
-```agsl
+```haskell
 // Variables are declared with the `let` keyword
 let two = 2
 let three = 3
